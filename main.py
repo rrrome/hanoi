@@ -30,7 +30,12 @@ class GameSession:
         self.saved_play_state: dict[str, Any] | None = None
         self.lock = threading.Lock()
 
-    def state(self, message: str = "") -> dict[str, Any]:
+    def state(
+        self,
+        message: str = "",
+        message_key: str = "",
+        message_args: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         elapsed_seconds = self._elapsed_seconds()
         completion_peg = self.game.completion_peg
         is_demo = self.mode == "demo"
@@ -48,6 +53,8 @@ class GameSession:
             "demo_total_steps": len(self.demo_moves) if is_demo else 0,
             "demo_target_peg": 2 if is_demo else None,
             "message": message,
+            "message_key": message_key,
+            "message_args": message_args or {},
         }
 
     def reset(self, disk_count: int) -> dict[str, Any]:
@@ -60,41 +67,46 @@ class GameSession:
             self.start_time = time.monotonic()
             self.finished = False
             self.finished_elapsed_seconds = None
-            return self.state("新游戏已开始")
+            return self.state("新游戏已开始", "newGameStarted")
 
     def move(self, source: int, target: int) -> dict[str, Any]:
         with self.lock:
             if self.mode == "demo":
-                return self.state("教学演示模式中不能手动移动盘子")
+                return self.state("教学演示模式中不能手动移动盘子", "demoManualMoveBlocked")
 
             if self.finished:
-                return self.state("本局已完成，请开始新游戏")
+                return self.state("本局已完成，请开始新游戏", "gameAlreadyComplete")
 
             if not self.game.move(source, target):
-                return self.state("无效移动：大盘子不能放在小盘子上")
+                return self.state("无效移动：大盘子不能放在小盘子上", "invalidMove")
 
             if self.game.is_complete:
                 self.finished = True
                 self.finished_elapsed_seconds = int(time.monotonic() - self.start_time)
                 completion_peg = self.game.completion_peg
-                return self.state(f"完成！已移到第 {completion_peg + 1} 根柱子")
+                peg_number = (completion_peg or 0) + 1
+                return self.state(
+                    f"完成！已移到第 {peg_number} 根柱子",
+                    "completeOnPeg",
+                    {"peg": peg_number},
+                )
 
-            return self.state("移动成功")
+            return self.state("移动成功", "moveSucceeded")
 
     def undo(self) -> dict[str, Any]:
         with self.lock:
             if self.mode == "demo":
-                return self.state("教学演示模式中请使用上一步")
+                return self.state("教学演示模式中请使用上一步", "demoUsePrevious")
 
             if not self.game.undo():
-                return self.state("没有可撤回的步骤")
+                return self.state("没有可撤回的步骤", "nothingToUndo")
 
             if self.finished_elapsed_seconds is not None:
                 self.start_time = time.monotonic() - self.finished_elapsed_seconds
 
             self.finished = False
             self.finished_elapsed_seconds = None
-            return self.state("已撤回上一步")
+            return self.state("已撤回上一步", "undoSucceeded")
 
     def start_demo(self, disk_count: int) -> dict[str, Any]:
         with self.lock:
@@ -107,14 +119,18 @@ class GameSession:
             self.game.reset(disk_count)
             self.finished = False
             self.finished_elapsed_seconds = None
-            return self.state(f"教学演示已开启，共 {len(self.demo_moves)} 步")
+            return self.state(
+                f"教学演示已开启，共 {len(self.demo_moves)} 步",
+                "demoStarted",
+                {"total": len(self.demo_moves)},
+            )
 
     def demo_next(self) -> dict[str, Any]:
         with self.lock:
             if self.mode != "demo":
-                return self.state("当前不在教学演示模式")
+                return self.state("当前不在教学演示模式", "notInDemo")
             if self.demo_step >= len(self.demo_moves):
-                return self.state("已经是最后一步")
+                return self.state("已经是最后一步", "alreadyLastStep")
 
             source, target = self.demo_moves[self.demo_step]
             if not self.game.move(source, target):
@@ -122,32 +138,36 @@ class GameSession:
 
             self.demo_step += 1
             return self.state(
-                f"第 {self.demo_step} 步：将盘子从第 {source + 1} 根移到第 {target + 1} 根"
+                f"第 {self.demo_step} 步：将盘子从第 {source + 1} 根移到第 {target + 1} 根",
+                "demoNextStep",
+                {"step": self.demo_step, "source": source + 1, "target": target + 1},
             )
 
     def demo_previous(self) -> dict[str, Any]:
         with self.lock:
             if self.mode != "demo":
-                return self.state("当前不在教学演示模式")
+                return self.state("当前不在教学演示模式", "notInDemo")
             if self.demo_step == 0:
-                return self.state("已经是第一步")
+                return self.state("已经是第一步", "alreadyFirstStep")
 
             if not self.game.undo():
                 raise RuntimeError("Cannot undo generated demo move.")
 
             self.demo_step -= 1
             if self.demo_step == 0:
-                return self.state("已回到初始状态")
+                return self.state("已回到初始状态", "demoBackToStart")
 
             source, target = self.demo_moves[self.demo_step - 1]
             return self.state(
-                f"已回到第 {self.demo_step} 步：盘子在第 {target + 1} 根柱子"
+                f"已回到第 {self.demo_step} 步：盘子在第 {target + 1} 根柱子",
+                "demoPreviousStep",
+                {"step": self.demo_step, "source": source + 1, "target": target + 1},
             )
 
     def demo_jump(self, step: int) -> dict[str, Any]:
         with self.lock:
             if self.mode != "demo":
-                return self.state("当前不在教学演示模式")
+                return self.state("当前不在教学演示模式", "notInDemo")
             if step < 0 or step > len(self.demo_moves):
                 raise ValueError(f"Step must be between 0 and {len(self.demo_moves)}.")
 
@@ -162,19 +182,23 @@ class GameSession:
                     raise RuntimeError("Cannot undo generated demo move.")
                 self.demo_step -= 1
 
-            return self.state(f"已跳转到第 {self.demo_step} / {len(self.demo_moves)} 步")
+            return self.state(
+                f"已跳转到第 {self.demo_step} / {len(self.demo_moves)} 步",
+                "demoJumped",
+                {"step": self.demo_step, "total": len(self.demo_moves)},
+            )
 
     def exit_demo(self) -> dict[str, Any]:
         with self.lock:
             if self.mode != "demo":
-                return self.state("当前不在教学演示模式")
+                return self.state("当前不在教学演示模式", "notInDemo")
 
             self.mode = "play"
             self.demo_moves = []
             self.demo_step = 0
             self._restore_play_state()
             self.saved_play_state = None
-            return self.state("已退出教学演示模式")
+            return self.state("已退出教学演示模式", "demoExited")
 
     def _elapsed_seconds(self) -> int:
         if self.mode == "demo":

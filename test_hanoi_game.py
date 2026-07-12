@@ -74,6 +74,8 @@ class HanoiGameTest(unittest.TestCase):
         time.sleep(0.02)
         self.assertTrue(state["is_complete"])
         self.assertEqual(state["completion_peg"], 1)
+        self.assertEqual(state["message_key"], "completeOnPeg")
+        self.assertEqual(state["message_args"], {"peg": 2})
         self.assertEqual(session.state()["elapsed_seconds"], frozen_elapsed)
 
     def test_minimum_solution_has_expected_moves(self) -> None:
@@ -89,6 +91,8 @@ class HanoiGameTest(unittest.TestCase):
         self.assertTrue(state["is_demo"])
         self.assertEqual(state["demo_total_steps"], 3)
         self.assertEqual(state["elapsed_seconds"], 0)
+        self.assertEqual(state["message_key"], "demoStarted")
+        self.assertEqual(state["message_args"], {"total": 3})
 
         blocked = session.move(0, 1)
         self.assertTrue(blocked["is_demo"])

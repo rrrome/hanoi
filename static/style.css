@@ -47,6 +47,27 @@ h1 {
   line-height: 1.1;
 }
 
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.language-button {
+  height: 34px;
+  padding: 0 12px;
+  border-color: var(--border);
+  background: #fff;
+  color: var(--accent);
+}
+
+.language-button:hover {
+  border-color: var(--accent);
+  background: #eef4ff;
+  color: var(--accent-dark);
+}
+
 #statusText {
   min-height: 22px;
   margin: 8px 0 0;

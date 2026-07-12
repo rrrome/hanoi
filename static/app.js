@@ -19,7 +19,99 @@ const diskColors = [
   "#e11d48",
 ];
 
+const LANGUAGE_STORAGE_KEY = "hanoi-language";
+
+const translations = {
+  zh: {
+    appTitle: "汉诺塔",
+    languageButton: "English",
+    controlsLabel: "游戏控制",
+    loading: "加载中...",
+    diskCountLabel: "盘子数量",
+    newGameButton: "新游戏",
+    undoButton: "撤回上一步",
+    demoButton: "教学演示",
+    previousButton: "上一步",
+    nextButton: "下一步",
+    exitDemoButton: "退出演示",
+    statsLabel: "游戏统计",
+    moveCountLabel: "总步数",
+    elapsedTimeLabel: "总时间",
+    minimumMovesLabel: "最少步数",
+    boardLabel: "汉诺塔棋盘",
+    demoProgressLabel: "演示进度",
+    requestFailed: "请求失败",
+    demoNotTimed: "不计时",
+    defaultPlayStatus: "点击一个柱子，再点击目标柱子移动",
+    defaultDemoStatus: "教学演示：使用上一步、下一步或底部滑条查看最少步骤",
+    selectNonEmptyPeg: "请选择有盘子的柱子",
+    selectedPeg: "已选择第 {peg} 根柱子",
+    newGameStarted: "新游戏已开始",
+    demoManualMoveBlocked: "教学演示模式中不能手动移动盘子",
+    gameAlreadyComplete: "本局已完成，请开始新游戏",
+    invalidMove: "无效移动：大盘子不能放在小盘子上",
+    completeOnPeg: "完成！已移到第 {peg} 根柱子",
+    moveSucceeded: "移动成功",
+    demoUsePrevious: "教学演示模式中请使用上一步",
+    nothingToUndo: "没有可撤回的步骤",
+    undoSucceeded: "已撤回上一步",
+    demoStarted: "教学演示已开启，共 {total} 步",
+    notInDemo: "当前不在教学演示模式",
+    alreadyLastStep: "已经是最后一步",
+    demoNextStep: "第 {step} 步：将盘子从第 {source} 根移到第 {target} 根",
+    alreadyFirstStep: "已经是第一步",
+    demoBackToStart: "已回到初始状态",
+    demoPreviousStep: "已回到第 {step} 步：盘子在第 {target} 根柱子",
+    demoJumped: "已跳转到第 {step} / {total} 步",
+    demoExited: "已退出教学演示模式",
+  },
+  en: {
+    appTitle: "Tower of Hanoi",
+    languageButton: "中文",
+    controlsLabel: "Game controls",
+    loading: "Loading...",
+    diskCountLabel: "Disks",
+    newGameButton: "New Game",
+    undoButton: "Undo Move",
+    demoButton: "Tutorial Demo",
+    previousButton: "Previous",
+    nextButton: "Next",
+    exitDemoButton: "Exit Demo",
+    statsLabel: "Game stats",
+    moveCountLabel: "Moves",
+    elapsedTimeLabel: "Time",
+    minimumMovesLabel: "Minimum Moves",
+    boardLabel: "Tower of Hanoi board",
+    demoProgressLabel: "Demo Progress",
+    requestFailed: "Request failed",
+    demoNotTimed: "Not timed",
+    defaultPlayStatus: "Click a peg with a disk, then click the destination peg.",
+    defaultDemoStatus: "Tutorial demo: use Previous, Next, or the slider to preview the minimum path.",
+    selectNonEmptyPeg: "Choose a peg that has disks.",
+    selectedPeg: "Selected peg {peg}",
+    newGameStarted: "New game started",
+    demoManualMoveBlocked: "Manual moves are disabled in tutorial demo mode.",
+    gameAlreadyComplete: "This game is complete. Start a new game.",
+    invalidMove: "Invalid move: a larger disk cannot be placed on a smaller disk.",
+    completeOnPeg: "Complete! All disks moved to peg {peg}.",
+    moveSucceeded: "Move successful",
+    demoUsePrevious: "Use Previous in tutorial demo mode.",
+    nothingToUndo: "No move to undo",
+    undoSucceeded: "Last move undone",
+    demoStarted: "Tutorial demo started with {total} steps.",
+    notInDemo: "Tutorial demo mode is not active.",
+    alreadyLastStep: "Already at the last step",
+    demoNextStep: "Step {step}: move a disk from peg {source} to peg {target}.",
+    alreadyFirstStep: "Already at the first step",
+    demoBackToStart: "Back to the initial state",
+    demoPreviousStep: "Back to step {step}: the disk is on peg {target}.",
+    demoJumped: "Jumped to step {step} / {total}.",
+    demoExited: "Exited tutorial demo mode",
+  },
+};
+
 const elements = {
+  languageButton: document.querySelector("#languageButton"),
   canvas: document.querySelector("#board"),
   diskCount: document.querySelector("#diskCount"),
   newGameButton: document.querySelector("#newGameButton"),
@@ -47,6 +139,9 @@ let lastSyncTime = performance.now();
 let syncedElapsed = 0;
 let demoJumpInFlight = false;
 let pendingDemoStep = null;
+let currentLanguage = loadLanguage();
+let localStatusKey = "";
+let localStatusArgs = {};
 
 async function requestJson(path, options = {}) {
   const response = await fetch(path, {
@@ -56,7 +151,7 @@ async function requestJson(path, options = {}) {
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.error || "请求失败");
+    throw new Error(data.error || t("requestFailed"));
   }
   return data;
 }
@@ -148,17 +243,26 @@ async function moveDisk(source, target) {
 
 function setState(nextState) {
   gameState = nextState;
-  const isDemo = gameState.is_demo;
+  localStatusKey = "";
+  localStatusArgs = {};
   syncedElapsed = gameState.elapsed_seconds;
   lastSyncTime = performance.now();
+  renderState();
+}
+
+function renderState() {
+  if (!gameState) {
+    elements.statusText.textContent = t("loading");
+    return;
+  }
+
+  const isDemo = gameState.is_demo;
   elements.diskCount.value = gameState.disk_count;
   elements.moveCount.textContent = isDemo
     ? `${gameState.demo_step} / ${gameState.demo_total_steps}`
     : gameState.move_count;
   elements.minimumMoves.textContent = gameState.minimum_moves;
-  elements.statusText.textContent =
-    gameState.message ||
-    (isDemo ? "教学演示：使用上一步和下一步查看最少步骤" : "点击一个柱子，再点击目标柱子移动");
+  elements.statusText.textContent = getStatusText();
 
   elements.demoControls.hidden = !isDemo;
   elements.demoButton.hidden = isDemo;
@@ -176,6 +280,59 @@ function setState(nextState) {
 
   draw();
   updateTimer();
+}
+
+function getStatusText() {
+  if (!gameState) {
+    return t("loading");
+  }
+
+  if (localStatusKey) {
+    return t(localStatusKey, localStatusArgs);
+  }
+
+  if (gameState.message_key) {
+    return t(gameState.message_key, gameState.message_args || {});
+  }
+
+  return gameState.is_demo ? t("defaultDemoStatus") : t("defaultPlayStatus");
+}
+
+function loadLanguage() {
+  const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  return savedLanguage === "en" ? "en" : "zh";
+}
+
+function toggleLanguage() {
+  currentLanguage = currentLanguage === "zh" ? "en" : "zh";
+  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLanguage);
+  applyLanguage();
+  renderState();
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLanguage === "zh" ? "zh-CN" : "en";
+  document.title = t("appTitle");
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+    element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+  });
+  elements.languageButton.textContent = t("languageButton");
+}
+
+function t(key, args = {}) {
+  const template = translations[currentLanguage][key] || translations.zh[key] || key;
+  return template.replace(/\{(\w+)\}/g, (_match, name) => {
+    return Object.prototype.hasOwnProperty.call(args, name) ? String(args[name]) : "";
+  });
+}
+
+function setLocalStatus(key, args = {}) {
+  localStatusKey = key;
+  localStatusArgs = args;
+  elements.statusText.textContent = t(key, args);
 }
 
 function clampDiskCount(value) {
@@ -200,7 +357,7 @@ function updateTimer() {
   }
 
   if (gameState.is_demo) {
-    elements.elapsedTime.textContent = "不计时";
+    elements.elapsedTime.textContent = t("demoNotTimed");
     return;
   }
 
@@ -349,7 +506,7 @@ async function handleBoardClick(event) {
   }
 
   if (gameState.is_demo) {
-    elements.statusText.textContent = "教学演示模式中不能手动移动盘子";
+    setLocalStatus("demoManualMoveBlocked");
     return;
   }
 
@@ -364,11 +521,11 @@ async function handleBoardClick(event) {
 
   if (selectedPeg === null) {
     if (gameState.pegs[peg].length === 0) {
-      elements.statusText.textContent = "请选择有盘子的柱子";
+      setLocalStatus("selectNonEmptyPeg");
       return;
     }
     selectedPeg = peg;
-    elements.statusText.textContent = `已选择第 ${peg + 1} 根柱子`;
+    setLocalStatus("selectedPeg", { peg: peg + 1 });
     draw();
     return;
   }
@@ -380,6 +537,7 @@ async function handleBoardClick(event) {
 
 elements.newGameButton.addEventListener("click", startNewGame);
 elements.undoButton.addEventListener("click", undoMove);
+elements.languageButton.addEventListener("click", toggleLanguage);
 elements.demoButton.addEventListener("click", startDemo);
 elements.demoPreviousButton.addEventListener("click", showPreviousDemoStep);
 elements.demoNextButton.addEventListener("click", showNextDemoStep);
@@ -400,6 +558,7 @@ elements.canvas.addEventListener("click", (event) => {
 window.addEventListener("resize", resizeCanvas);
 
 setInterval(updateTimer, 250);
+applyLanguage();
 resizeCanvas();
 loadState().catch((error) => {
   elements.statusText.textContent = error.message;
