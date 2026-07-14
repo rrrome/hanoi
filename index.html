@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>汉诺塔</title>
+    <script>
+      (() => {
+        const savedTheme = window.localStorage.getItem("hanoi-theme");
+        const theme = savedTheme === "dark" || savedTheme === "light"
+          ? savedTheme
+          : window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light";
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <div class="brand-row">
+            <h1 data-i18n="appTitle">汉诺塔</h1>
+            <button id="languageButton" class="secondary-button language-button" type="button">English</button>
+            <button id="homeButton" class="secondary-button" type="button" data-i18n="homeButton" hidden>主页</button>
+          </div>
+          <p id="statusText" data-i18n="loading">加载中...</p>
+        </div>
+        <div class="top-actions">
+          <button id="themeButton" class="secondary-button theme-button" type="button" aria-label="切换深色/浅色模式">深色</button>
+        </div>
+      </header>
+
+      <section id="homeView" class="home-view" hidden>
+        <div class="home-actions">
+          <button id="homeNewGameButton" type="button" data-i18n="newGameButton">新游戏</button>
+          <button id="homeDemoButton" type="button" data-i18n="demoButton">教学演示</button>
+          <button id="homeSolverButton" type="button" data-i18n="solverButton">残局破解</button>
+        </div>
+      </section>
+
+      <section id="gameView" hidden>
+        <div class="modebar">
+          <div>
+            <h2 id="modeTitle">新游戏</h2>
+            <p id="modeSummary"></p>
+          </div>
+          <div class="mode-actions">
+            <button id="undoButton" class="secondary-button" type="button" data-i18n="undoButton" hidden>撤回上一步</button>
+            <button id="confirmSetupButton" type="button" data-i18n="confirmSetupButton" hidden>确认残局</button>
+            <div id="guideControls" class="guide-controls" hidden>
+              <button id="previousButton" type="button" data-i18n="previousButton">上一步</button>
+              <span id="guideProgress">0 / 0</span>
+              <button id="nextButton" type="button" data-i18n="nextButton">下一步</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="stats" aria-label="游戏统计" data-i18n-aria-label="statsLabel">
+          <div>
+            <span id="primaryStatLabel" data-i18n="moveCountLabel">总步数</span>
+            <strong id="primaryStat">0</strong>
+          </div>
+          <div>
+            <span data-i18n="elapsedTimeLabel">总时间</span>
+            <strong id="elapsedTime">00:00</strong>
+          </div>
+          <div>
+            <span id="minimumMovesLabel" data-i18n="minimumMovesLabel">最少步数</span>
+            <strong id="minimumMoves">7</strong>
+          </div>
+        </section>
+
+        <section class="board-panel" aria-label="汉诺塔棋盘" data-i18n-aria-label="boardLabel">
+          <canvas id="board" width="1200" height="620"></canvas>
+        </section>
+
+        <section id="guideSliderPanel" class="guide-slider-panel" aria-label="演示进度" data-i18n-aria-label="guideProgressLabel" hidden>
+          <label for="guideStepSlider" data-i18n="guideProgressLabel">演示进度</label>
+          <input id="guideStepSlider" type="range" min="0" max="0" step="1" value="0" />
+          <span id="guideSliderValue">0 / 0</span>
+        </section>
+      </section>
+    </main>
+
+    <div id="configModal" class="modal-backdrop" hidden>
+      <form id="configForm" class="modal" novalidate>
+        <h2 id="configTitle">新游戏</h2>
+        <p id="configHint"></p>
+
+        <label class="field">
+          <span data-i18n="diskCountLabel">盘子数量</span>
+          <input id="modalDiskCount" type="number" min="2" max="16" value="3" required />
+          <small data-i18n="diskCountHint">请输入 2 到 16 之间的整数。</small>
+        </label>
+
+        <div class="field">
+          <span data-i18n="initialPegLabel">初始盘子位置</span>
+          <div id="initialPegButtons" class="peg-button-group" role="group" aria-label="初始盘子位置"></div>
+        </div>
+
+        <div class="field">
+          <span data-i18n="targetPegLabel">目标盘子位置</span>
+          <div id="targetPegButtons" class="peg-button-group" role="group" aria-label="目标盘子位置"></div>
+        </div>
+
+        <p id="configError" class="form-error" role="alert"></p>
+
+        <div class="modal-actions">
+          <button class="secondary-button" type="button" id="cancelConfigButton" data-i18n="cancelButton">取消</button>
+          <button type="submit" id="submitConfigButton" data-i18n="startButton">开始</button>
+        </div>
+      </form>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
