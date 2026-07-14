@@ -26,6 +26,9 @@
   --disk-label: #ffffff;
   --disk-shadow: rgba(15, 23, 42, 0.12);
   --disk-shadow-lifted: rgba(15, 23, 42, 0.26);
+  --guide-origin-fill: rgba(36, 107, 254, 0.07);
+  --guide-origin-stroke: rgba(36, 107, 254, 0.38);
+  --guide-origin-label: #94a3b8;
 }
 
 :root[data-theme="dark"] {
@@ -56,6 +59,9 @@
   --disk-label: #ffffff;
   --disk-shadow: rgba(0, 0, 0, 0.34);
   --disk-shadow-lifted: rgba(0, 0, 0, 0.52);
+  --guide-origin-fill: rgba(92, 200, 255, 0.1);
+  --guide-origin-stroke: rgba(92, 200, 255, 0.48);
+  --guide-origin-label: #cbd5e1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -87,6 +93,9 @@
     --disk-label: #ffffff;
     --disk-shadow: rgba(0, 0, 0, 0.34);
     --disk-shadow-lifted: rgba(0, 0, 0, 0.52);
+    --guide-origin-fill: rgba(92, 200, 255, 0.1);
+    --guide-origin-stroke: rgba(92, 200, 255, 0.48);
+    --guide-origin-label: #cbd5e1;
   }
 }
 

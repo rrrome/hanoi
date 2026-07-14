@@ -1240,6 +1240,20 @@ function draw() {
   const maxDiskWidth = Math.min(290, width / 3 - 52);
   const minDiskWidth = 48;
   const widthStep = (maxDiskWidth - minDiskWidth) / Math.max(1, gameState.disk_count - 1);
+  const guideOrigin = getGuideMoveOrigin();
+
+  if (guideOrigin) {
+    const originRect = getDiskRect(
+      centers[guideOrigin.peg],
+      baseY,
+      diskHeight,
+      minDiskWidth,
+      widthStep,
+      guideOrigin.disk,
+      guideOrigin.level,
+    );
+    drawGuideOrigin(originRect, guideOrigin.disk, colors);
+  }
 
   gameState.pegs.forEach((peg, pegIndex) => {
     const centerX = centers[pegIndex];
@@ -1269,6 +1283,36 @@ function draw() {
   }
 }
 
+function getGuideMoveOrigin() {
+  if (!gameState?.is_guide || gameState.guide_step <= 0) {
+    return null;
+  }
+
+  const lastMove = session.game.history[session.game.history.length - 1];
+  if (!lastMove) {
+    return null;
+  }
+
+  const peg = Number(lastMove.source);
+  const disk = Number(lastMove.disk);
+  if (
+    !Number.isInteger(peg) ||
+    peg < 0 ||
+    peg >= PEG_COUNT ||
+    !Number.isInteger(disk) ||
+    disk < 1 ||
+    disk > gameState.disk_count
+  ) {
+    return null;
+  }
+
+  return {
+    disk,
+    peg,
+    level: gameState.pegs[peg]?.length ?? 0,
+  };
+}
+
 function getDiskRect(centerX, baseY, diskHeight, minDiskWidth, widthStep, disk, level) {
   const width = minDiskWidth + (disk - 1) * widthStep;
   return {
@@ -1277,6 +1321,25 @@ function getDiskRect(centerX, baseY, diskHeight, minDiskWidth, widthStep, disk, 
     width,
     height: diskHeight - 2,
   };
+}
+
+function drawGuideOrigin(rect, disk, colors = getBoardColors()) {
+  ctx.save();
+  ctx.shadowColor = "transparent";
+  ctx.fillStyle = colors.guideOriginFill;
+  ctx.strokeStyle = colors.guideOriginStroke;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([7, 6]);
+  roundRect(ctx, rect.x, rect.y, rect.width, rect.height, 7);
+  ctx.fill();
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = colors.guideOriginLabel;
+  ctx.font = `700 ${Math.max(9, Math.min(12, rect.height - 4))}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(String(disk), rect.x + rect.width / 2, rect.y + rect.height / 2);
+  ctx.restore();
 }
 
 function drawDisk(rect, disk, lifted, colors = getBoardColors()) {
@@ -1310,6 +1373,9 @@ function getBoardColors() {
     diskLabel: cssColor("--disk-label", "#ffffff"),
     diskShadow: cssColor("--disk-shadow", "rgba(15, 23, 42, 0.12)"),
     diskShadowLifted: cssColor("--disk-shadow-lifted", "rgba(15, 23, 42, 0.26)"),
+    guideOriginFill: cssColor("--guide-origin-fill", "rgba(36, 107, 254, 0.07)"),
+    guideOriginStroke: cssColor("--guide-origin-stroke", "rgba(36, 107, 254, 0.38)"),
+    guideOriginLabel: cssColor("--guide-origin-label", "#94a3b8"),
   };
 }
 
