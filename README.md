@@ -19,13 +19,9 @@
 
 ## 运行
 
-直接打开根目录的 `index.html` 即可运行。
+[点击此处直接运行](https://rrrome.github.io/hanoi/)
 
-也可以把仓库发布到 GitHub Pages，访问类似：
-
-```text
-https://rrrome.github.io/hanoi/
-```
+也可以下载项目后直接打开根目录的 `index.html`。
 
 ## 项目结构
 

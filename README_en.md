@@ -19,13 +19,9 @@ A fully static Tower of Hanoi game that runs directly in the browser. It does no
 
 ## Run
 
-Open the root `index.html` file directly in a browser.
+[Click here to run in your browser](https://rrrome.github.io/hanoi/)
 
-You can also publish the repository with GitHub Pages and visit a URL like:
-
-```text
-https://rrrome.github.io/hanoi/
-```
+You can also download the project and open the root `index.html` file directly in a browser.
 
 ## Project Structure
 
