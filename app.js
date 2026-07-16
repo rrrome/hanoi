@@ -21,6 +21,8 @@ const GENSHIN_DROP_EFFECT_DURATION = 450;
 const GENSHIN_DROP_SPARK_COUNT = 30;
 const GENSHIN_DROP_SPARK_ANGLE = Math.PI / 3;
 const GENSHIN_DROP_SPARK_SPREAD = Math.PI / 9;
+const GENSHIN_ASSET_RETRY_DELAYS = [1500, 4500];
+const GENSHIN_ASSET_FALLBACK_DELAY = 30_000;
 const GENSHIN_GEAR_HOLE_BOUNDS = { x: 263, y: 105, width: 533, height: 223 };
 const GENSHIN_GEAR_HOLE_CENTER_Y = GENSHIN_GEAR_HOLE_BOUNDS.y + GENSHIN_GEAR_HOLE_BOUNDS.height / 2;
 const HOME_MODE = "home";
@@ -80,6 +82,7 @@ const translations = {
     solutionStepsLabel: "破解步数",
     boardLabel: "堆栈塔棋盘",
     guideProgressLabel: "演示进度",
+    themeAssetsLoading: "原神主题资源加载中，最多等待 30 秒…",
     requestFailed: "请求失败",
     notTimed: "不计时",
     modePlay: "新游戏",
@@ -164,6 +167,7 @@ const translations = {
     solutionStepsLabel: "Solution Steps",
     boardLabel: "Stack Tower board",
     guideProgressLabel: "Progress",
+    themeAssetsLoading: "Loading Genshin theme assets; waiting up to 30 seconds…",
     requestFailed: "Request failed",
     notTimed: "Not timed",
     modePlay: "New Game",
@@ -252,6 +256,7 @@ const elements = {
 };
 
 const ctx = elements.canvas.getContext("2d");
+let genshinAssetFallbackAllowed = false;
 const genshinAssets = {
   background: loadImage("genshin_theme/background.PNG"),
   column: loadImage("genshin_theme/column_alpha.png"),
@@ -281,6 +286,11 @@ let drawFrame = null;
 let genshinEffectFrame = null;
 let genshinDropEffects = [];
 const session = createSession();
+
+window.setTimeout(() => {
+  genshinAssetFallbackAllowed = true;
+  scheduleDraw();
+}, GENSHIN_ASSET_FALLBACK_DELAY);
 
 async function readLocalState() {
   return sessionState();
@@ -1272,13 +1282,45 @@ function t(key, args = {}) {
 
 function loadImage(src) {
   const image = new Image();
-  image.src = src;
+  let retryCount = 0;
+  image.decoding = "async";
+
+  const requestImage = () => {
+    const separator = src.includes("?") ? "&" : "?";
+    image.src = retryCount === 0 ? src : `${src}${separator}retry=${retryCount}`;
+  };
+
   image.addEventListener("load", () => {
     genshinGearCache.clear();
     scheduleDraw();
   });
-  image.addEventListener("error", scheduleDraw);
+  image.addEventListener("error", () => {
+    scheduleDraw();
+    if (retryCount >= GENSHIN_ASSET_RETRY_DELAYS.length) {
+      return;
+    }
+    const delay = GENSHIN_ASSET_RETRY_DELAYS[retryCount];
+    retryCount += 1;
+    window.setTimeout(requestImage, delay);
+  });
+  requestImage();
   return image;
+}
+
+function isImageReady(image) {
+  return image.complete && image.naturalWidth > 0;
+}
+
+function areGenshinCoreAssetsReady() {
+  return isImageReady(genshinAssets.background)
+    && isImageReady(genshinAssets.column)
+    && isImageReady(genshinAssets.gear);
+}
+
+function isGenshinAssetWaitActive() {
+  return getActiveTheme() === GENSHIN_THEME
+    && !areGenshinCoreAssetsReady()
+    && !genshinAssetFallbackAllowed;
 }
 
 function setLocalStatus(key, args = {}) {
@@ -1331,10 +1373,20 @@ function draw() {
 
   const colors = getBoardColors();
   if (getActiveTheme() === GENSHIN_THEME) {
-    drawGenshinBoard(width, height, colors);
+    if (areGenshinCoreAssetsReady()) {
+      drawGenshinBoard(width, height, colors);
+    } else if (genshinAssetFallbackAllowed) {
+      drawStandardBoard(width, height, colors);
+    } else {
+      drawGenshinAssetLoading(width, height, colors);
+    }
     return;
   }
 
+  drawStandardBoard(width, height, colors);
+}
+
+function drawStandardBoard(width, height, colors) {
   drawBackground(width, height, colors);
 
   const centers = getPegCenters(width);
@@ -1403,9 +1455,35 @@ function draw() {
   }
 }
 
+function drawGenshinAssetLoading(width, height, colors) {
+  drawBackground(width, height, colors);
+
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const diamondSize = Math.max(8, Math.min(13, width / 90));
+  const diamondGap = diamondSize * 2.5;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(246, 216, 139, 0.88)";
+  [-1, 0, 1].forEach((offset) => {
+    ctx.save();
+    ctx.translate(centerX + offset * diamondGap, centerY - 24);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillRect(-diamondSize / 2, -diamondSize / 2, diamondSize, diamondSize);
+    ctx.restore();
+  });
+
+  ctx.fillStyle = colors.pegLabel;
+  ctx.font = `600 ${Math.max(15, Math.min(20, width / 55))}px Arial, "Microsoft YaHei", sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(t("themeAssetsLoading"), centerX, centerY + 24);
+  ctx.restore();
+}
+
 function drawGenshinBoard(width, height, colors) {
-  if (!genshinAssets.background.complete || !genshinAssets.background.naturalWidth) {
-    drawBackground(width, height, colors);
+  if (!areGenshinCoreAssetsReady()) {
+    drawStandardBoard(width, height, colors);
     return;
   }
 
@@ -1471,7 +1549,12 @@ function drawGenshinBoard(width, height, colors) {
 }
 
 function startGenshinDropEffect(disk, targetPeg) {
-  if (getActiveTheme() !== GENSHIN_THEME || !gameState || elements.gameView.hidden) {
+  if (
+    getActiveTheme() !== GENSHIN_THEME
+    || !areGenshinCoreAssetsReady()
+    || !gameState
+    || elements.gameView.hidden
+  ) {
     return;
   }
 
@@ -2222,7 +2305,7 @@ function roundRect(context, x, y, width, height, radius) {
 }
 
 function getPegCenters(width) {
-  if (getActiveTheme() === GENSHIN_THEME && genshinAssets.background.complete && genshinAssets.background.naturalWidth) {
+  if (getActiveTheme() === GENSHIN_THEME && areGenshinCoreAssetsReady()) {
     const height = elements.canvas.getBoundingClientRect().height;
     return getGenshinLayout(width, height).centers;
   }
@@ -2283,7 +2366,7 @@ function hitDisk(point) {
 }
 
 function handlePointerDown(event) {
-  if (gameState?.mode !== "setup") {
+  if (isGenshinAssetWaitActive() || gameState?.mode !== "setup") {
     return;
   }
 
@@ -2320,7 +2403,12 @@ function handlePointerMove(event) {
 }
 
 function updateHoveredPegFromEvent(event) {
-  if (!gameState || gameState.mode === "home" || elements.gameView.hidden) {
+  if (
+    isGenshinAssetWaitActive()
+    || !gameState
+    || gameState.mode === "home"
+    || elements.gameView.hidden
+  ) {
     setHoveredPeg(null);
     return;
   }
@@ -2367,7 +2455,7 @@ function handlePointerUp(event) {
 }
 
 function handleBoardClick(event) {
-  if (!gameState || gameState.mode !== "play") {
+  if (isGenshinAssetWaitActive() || !gameState || gameState.mode !== "play") {
     return;
   }
 
