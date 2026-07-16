@@ -1,9 +1,28 @@
 const MIN_DISKS = 2;
-const MAX_DISKS = 16;
+const MAX_DISKS = 10;
+const DEFAULT_DISKS = 7;
 const PEG_COUNT = 3;
 const LANGUAGE_STORAGE_KEY = "hanoi-language";
 const THEME_STORAGE_KEY = "hanoi-theme";
-const DARK_THEME_QUERY = "(prefers-color-scheme: dark)";
+const GENSHIN_THEME = "genshin";
+const THEME_OPTIONS = ["light", "dark", GENSHIN_THEME];
+const GENSHIN_COLUMN_HIGHLIGHT_TOP_OFFSET = -10;
+const GENSHIN_COLUMN_JOIN_ARC_DEPTH_RATIO = 0.45;
+const GENSHIN_COLUMN_JOIN_OFFSET_Y = 5;
+const GENSHIN_COLUMN_SHAFT_SOURCE = { x: 37, y: 320, width: 98, height: 838 };
+const GENSHIN_GEAR_SOURCE_CROP = { x: 210, y: 250, width: 1110, height: 610 };
+const GENSHIN_GEAR_VISIBLE_BOUNDS = { x: 44, y: 29, width: 974, height: 499 };
+const GENSHIN_GEAR_HEIGHT_RATIO = 0.65;
+const GENSHIN_GEAR_STACK_SPACING_RATIO = 0.65;
+const GENSHIN_GEAR_STACK_BASE_Y = 735;
+const GENSHIN_GEAR_TEXTURE_SHADOW_ALPHA = 0.32;
+const GENSHIN_GEAR_TEXTURE_HIGHLIGHT_ALPHA = 0.18;
+const GENSHIN_DROP_EFFECT_DURATION = 450;
+const GENSHIN_DROP_SPARK_COUNT = 30;
+const GENSHIN_DROP_SPARK_ANGLE = Math.PI / 3;
+const GENSHIN_DROP_SPARK_SPREAD = Math.PI / 9;
+const GENSHIN_GEAR_HOLE_BOUNDS = { x: 263, y: 105, width: 533, height: 223 };
+const GENSHIN_GEAR_HOLE_CENTER_Y = GENSHIN_GEAR_HOLE_BOUNDS.y + GENSHIN_GEAR_HOLE_BOUNDS.height / 2;
 const HOME_MODE = "home";
 const PLAY_MODE = "play";
 const DEMO_MODE = "demo";
@@ -11,28 +30,19 @@ const SETUP_MODE = "setup";
 const SOLVER_MODE = "solver";
 const GUIDE_MODES = new Set([DEMO_MODE, SOLVER_MODE]);
 
-const diskColors = [
-  "#2563eb",
-  "#059669",
-  "#d97706",
-  "#dc2626",
-  "#7c3aed",
-  "#0891b2",
-  "#db2777",
-  "#65a30d",
-  "#ea580c",
-  "#0d9488",
-  "#4f46e5",
-  "#ca8a04",
-  "#16a34a",
-  "#9333ea",
-  "#0284c7",
-  "#e11d48",
+const diskGradientStops = [
+  "#f07a44",
+  "#fb8c42",
+  "#fdbd49",
+  "#d8c54c",
+  "#abb46b",
+  "#82adac",
+  "#978fb4",
 ];
 
 const translations = {
   zh: {
-    appTitle: "汉诺塔",
+    appTitle: "堆栈塔",
     loading: "加载中...",
     homeButton: "主页",
     homeOpened: "已返回主页",
@@ -43,7 +53,11 @@ const translations = {
     languageButton: "English",
     themeToDarkButton: "深色",
     themeToLightButton: "浅色",
-    themeToggleLabel: "切换深色/浅色模式",
+    themeButton: "主题",
+    themeLightOption: "浅色",
+    themeDarkOption: "深色",
+    themeGenshinOption: "原神",
+    themeToggleLabel: "选择主题",
     undoButton: "撤回上一步",
     playAgainButton: "再来一局",
     confirmSetupButton: "确认残局",
@@ -52,7 +66,7 @@ const translations = {
     cancelButton: "取消",
     startButton: "开始",
     diskCountLabel: "盘子数量",
-    diskCountHint: "请输入 2 到 16 之间的整数。",
+    diskCountHint: "拖动滑块选择 {min} 到 {max} 个盘子。",
     initialPegLabel: "初始盘子位置",
     targetPegLabel: "目标盘子位置",
     pegOption: "第 {peg} 根柱子",
@@ -64,7 +78,7 @@ const translations = {
     elapsedTimeLabel: "总时间",
     minimumMovesLabel: "最少步数",
     solutionStepsLabel: "破解步数",
-    boardLabel: "汉诺塔棋盘",
+    boardLabel: "堆栈塔棋盘",
     guideProgressLabel: "演示进度",
     requestFailed: "请求失败",
     notTimed: "不计时",
@@ -72,10 +86,10 @@ const translations = {
     modeDemo: "教学演示",
     modeSetup: "设置残局",
     modeSolver: "残局破解",
-    playConfigHint: "输入 2-16 个盘子，选择初始柱和目标柱。目标默认第 2 或第 3 根柱子均可。",
-    demoConfigHint: "输入 2-16 个盘子，选择初始柱和唯一目标柱，系统会生成最少步骤。",
-    solverConfigHint: "输入 2-16 个盘子，选择初始柱和唯一目标柱，然后拖动盘子设置残局。",
-    diskCountInvalid: "盘子数量必须是 2 到 16 之间的整数。",
+    playConfigHint: "选择 2-10 个盘子，设置初始柱和目标柱。目标默认第 2 或第 3 根柱子均可。",
+    demoConfigHint: "选择 2-10 个盘子，设置初始柱和唯一目标柱，系统会生成最少步骤。",
+    solverConfigHint: "选择 2-10 个盘子，设置初始柱和唯一目标柱，然后拖动盘子设置残局。",
+    diskCountInvalid: "盘子数量必须是 {min} 到 {max} 之间的整数。",
     targetConflict: "初始位置不能同时作为目标位置。",
     targetRequired: "请选择一个目标位置。",
     defaultPlayStatus: "点击一个柱子，再点击目标柱子移动。",
@@ -112,7 +126,7 @@ const translations = {
     targetList: "第 {targets} 根",
   },
   en: {
-    appTitle: "Tower of Hanoi",
+    appTitle: "Stack Tower",
     loading: "Loading...",
     homeButton: "Home",
     homeOpened: "Returned to the home screen",
@@ -123,7 +137,11 @@ const translations = {
     languageButton: "中文",
     themeToDarkButton: "Dark",
     themeToLightButton: "Light",
-    themeToggleLabel: "Toggle dark/light mode",
+    themeButton: "Theme",
+    themeLightOption: "Light",
+    themeDarkOption: "Dark",
+    themeGenshinOption: "Genshin",
+    themeToggleLabel: "Choose theme",
     undoButton: "Undo Move",
     playAgainButton: "Play Again",
     confirmSetupButton: "Confirm State",
@@ -132,7 +150,7 @@ const translations = {
     cancelButton: "Cancel",
     startButton: "Start",
     diskCountLabel: "Disks",
-    diskCountHint: "Enter an integer from 2 to 16.",
+    diskCountHint: "Move the slider to choose {min} to {max} disks.",
     initialPegLabel: "Initial peg",
     targetPegLabel: "Target peg",
     pegOption: "Peg {peg}",
@@ -144,7 +162,7 @@ const translations = {
     elapsedTimeLabel: "Time",
     minimumMovesLabel: "Minimum Moves",
     solutionStepsLabel: "Solution Steps",
-    boardLabel: "Tower of Hanoi board",
+    boardLabel: "Stack Tower board",
     guideProgressLabel: "Progress",
     requestFailed: "Request failed",
     notTimed: "Not timed",
@@ -152,10 +170,10 @@ const translations = {
     modeDemo: "Tutorial Demo",
     modeSetup: "Set Endgame State",
     modeSolver: "Endgame Solver",
-    playConfigHint: "Enter 2-16 disks, choose the initial peg and target. By default, Peg 2 or Peg 3 wins.",
-    demoConfigHint: "Enter 2-16 disks, choose the initial peg and one target peg. The shortest solution is generated.",
-    solverConfigHint: "Enter 2-16 disks, choose the initial peg and one target peg, then drag disks to set the endgame state.",
-    diskCountInvalid: "Disk count must be an integer from 2 to 16.",
+    playConfigHint: "Choose 2-10 disks, then set the initial peg and target. By default, Peg 2 or Peg 3 wins.",
+    demoConfigHint: "Choose 2-10 disks, then set the initial peg and one target peg. The shortest solution is generated.",
+    solverConfigHint: "Choose 2-10 disks, then set the initial peg and one target peg before arranging the endgame state.",
+    diskCountInvalid: "Disk count must be an integer from {min} to {max}.",
     targetConflict: "The initial peg cannot also be a target peg.",
     targetRequired: "Choose one target peg.",
     defaultPlayStatus: "Click a peg with a disk, then click the destination peg.",
@@ -196,6 +214,7 @@ const translations = {
 const elements = {
   languageButton: document.querySelector("#languageButton"),
   themeButton: document.querySelector("#themeButton"),
+  themeMenu: document.querySelector("#themeMenu"),
   homeButton: document.querySelector("#homeButton"),
   homeView: document.querySelector("#homeView"),
   gameView: document.querySelector("#gameView"),
@@ -225,6 +244,7 @@ const elements = {
   configTitle: document.querySelector("#configTitle"),
   configHint: document.querySelector("#configHint"),
   modalDiskCount: document.querySelector("#modalDiskCount"),
+  modalDiskCountValue: document.querySelector("#modalDiskCountValue"),
   initialPegButtons: document.querySelector("#initialPegButtons"),
   targetPegButtons: document.querySelector("#targetPegButtons"),
   configError: document.querySelector("#configError"),
@@ -232,13 +252,21 @@ const elements = {
 };
 
 const ctx = elements.canvas.getContext("2d");
-const themeMedia = window.matchMedia?.(DARK_THEME_QUERY) || null;
+const genshinAssets = {
+  background: loadImage("genshin_theme/background.PNG"),
+  column: loadImage("genshin_theme/column_alpha.png"),
+  gear: loadImage("genshin_theme/gear.png"),
+  highlight: loadImage("genshin_theme/column_highlight.png"),
+};
+const genshinGearCache = new Map();
 
 let gameState = null;
+let genshinDiskSizeCache = null;
 let currentLanguage = loadLanguage();
 let selectedTheme = loadSavedTheme();
 let configKind = "play";
 let selectedPeg = null;
+let hoveredPeg = null;
 let localStatusKey = "";
 let localStatusArgs = {};
 let syncedElapsed = 0;
@@ -250,6 +278,8 @@ let dragState = null;
 let configInitialPeg = 0;
 let configTargetPegs = [1, 2];
 let drawFrame = null;
+let genshinEffectFrame = null;
+let genshinDropEffects = [];
 const session = createSession();
 
 async function readLocalState() {
@@ -291,7 +321,7 @@ async function runAction(action, payload = {}) {
 
 function createSession() {
   return {
-    game: createGame(3, 0, [1, 2]),
+    game: createGame(DEFAULT_DISKS, 0, [1, 2]),
     mode: HOME_MODE,
     startTime: performance.now(),
     finished: false,
@@ -305,7 +335,7 @@ function createSession() {
 
 function createGame(diskCount, initialPeg, targetPegs) {
   const game = {
-    diskCount: 3,
+    diskCount: DEFAULT_DISKS,
     initialPeg: 0,
     targetPegs: [1, 2],
     pegs: [],
@@ -758,14 +788,19 @@ async function loadState() {
 
 async function goHome() {
   selectedPeg = null;
+  hoveredPeg = null;
   dragState = null;
+  genshinDiskSizeCache = null;
+  clearGenshinDropEffects();
   setState(await runAction("home"));
 }
 
 function openConfig(kind) {
   configKind = kind;
   elements.configError.textContent = "";
-  elements.modalDiskCount.value = gameState?.disk_count || 3;
+  const maxDiskCount = getCurrentMaxDisks();
+  elements.modalDiskCount.value = Math.min(gameState?.disk_count || DEFAULT_DISKS, maxDiskCount);
+  updateDiskCountLimit();
   configInitialPeg = 0;
   configTargetPegs = kind === "play" ? [1, 2] : [2];
 
@@ -791,6 +826,9 @@ async function submitConfig(event) {
   }
 
   try {
+    hoveredPeg = null;
+    genshinDiskSizeCache = null;
+    clearGenshinDropEffects();
     if (configKind === "play") {
       setState(await runAction("start-play", config.payload));
     } else if (configKind === "demo") {
@@ -806,8 +844,9 @@ async function submitConfig(event) {
 
 function readConfig() {
   const diskCount = Number.parseInt(elements.modalDiskCount.value, 10);
-  if (Number.isNaN(diskCount) || diskCount < MIN_DISKS || diskCount > MAX_DISKS) {
-    return { ok: false, error: t("diskCountInvalid") };
+  const maxDiskCount = getCurrentMaxDisks();
+  if (Number.isNaN(diskCount) || diskCount < MIN_DISKS || diskCount > maxDiskCount) {
+    return { ok: false, error: t("diskCountInvalid", { min: MIN_DISKS, max: maxDiskCount }) };
   }
 
   const initialPeg = configInitialPeg;
@@ -847,9 +886,29 @@ function readConfig() {
   };
 }
 
+function getCurrentMaxDisks() {
+  return MAX_DISKS;
+}
+
+function updateDiskCountLimit() {
+  const maxDiskCount = getCurrentMaxDisks();
+  elements.modalDiskCount.min = String(MIN_DISKS);
+  elements.modalDiskCount.max = String(maxDiskCount);
+  document.querySelectorAll("[data-i18n=\"diskCountHint\"]").forEach((element) => {
+    element.textContent = t("diskCountHint", { min: MIN_DISKS, max: maxDiskCount });
+  });
+  const currentValue = Number.parseInt(elements.modalDiskCount.value, 10);
+  const normalizedValue = Math.min(maxDiskCount, Math.max(MIN_DISKS, currentValue || MIN_DISKS));
+  elements.modalDiskCount.value = String(normalizedValue);
+  elements.modalDiskCountValue.value = String(normalizedValue);
+  const range = Math.max(1, maxDiskCount - MIN_DISKS);
+  const progress = ((normalizedValue - MIN_DISKS) / range) * 100;
+  elements.modalDiskCount.style.setProperty("--range-progress", `${progress}%`);
+}
+
 async function undoMove() {
   selectedPeg = null;
-  setState(await runAction("undo"));
+  setState(await runAction("undo"), { animateDrop: true });
 }
 
 async function restartCurrentPlay() {
@@ -858,7 +917,10 @@ async function restartCurrentPlay() {
   }
 
   selectedPeg = null;
+  hoveredPeg = null;
   dragState = null;
+  genshinDiskSizeCache = null;
+  clearGenshinDropEffects();
   setState(await runAction("start-play", {
     disk_count: gameState.disk_count,
     initial_peg: gameState.initial_peg,
@@ -877,18 +939,19 @@ async function handlePlayAction() {
 
 async function confirmSetup() {
   selectedPeg = null;
+  hoveredPeg = null;
   dragState = null;
   setState(await runAction("start-solver"));
 }
 
 async function showPreviousStep() {
   selectedPeg = null;
-  setState(await runAction("guide-previous"));
+  setState(await runAction("guide-previous"), { animateDrop: true });
 }
 
 async function showNextStep() {
   selectedPeg = null;
-  setState(await runAction("guide-next"));
+  setState(await runAction("guide-next"), { animateDrop: true });
 }
 
 async function jumpGuideStep(step) {
@@ -917,20 +980,47 @@ async function jumpGuideStep(step) {
 }
 
 async function moveDisk(source, target) {
-  setState(await runAction("move", { source, target }));
+  setState(await runAction("move", { source, target }), { animateDrop: true });
 }
 
 async function moveSetupDisk(disk, target) {
-  setState(await runAction("move-setup-disk", { disk, target }));
+  setState(await runAction("move-setup-disk", { disk, target }), { animateDrop: true });
 }
 
-function setState(nextState) {
+function setState(nextState, options = {}) {
+  const dropTransition = options.animateDrop ? getSingleDiskTransition(gameState, nextState) : null;
   gameState = nextState;
   localStatusKey = "";
   localStatusArgs = {};
   syncedElapsed = gameState.elapsed_seconds;
   lastSyncTime = performance.now();
   renderState();
+  if (dropTransition) {
+    startGenshinDropEffect(dropTransition.disk, dropTransition.targetPeg);
+  }
+}
+
+function getSingleDiskTransition(previousState, nextState) {
+  if (!previousState?.pegs || !nextState?.pegs || previousState.disk_count !== nextState.disk_count) {
+    return null;
+  }
+
+  const previousPositions = new Map();
+  const nextPositions = new Map();
+  previousState.pegs.forEach((peg, pegIndex) => {
+    peg.forEach((disk) => previousPositions.set(disk, pegIndex));
+  });
+  nextState.pegs.forEach((peg, pegIndex) => {
+    peg.forEach((disk) => nextPositions.set(disk, pegIndex));
+  });
+
+  const changedDisks = [];
+  nextPositions.forEach((targetPeg, disk) => {
+    if (previousPositions.get(disk) !== targetPeg) {
+      changedDisks.push({ disk, targetPeg });
+    }
+  });
+  return changedDisks.length === 1 ? changedDisks[0] : null;
 }
 
 function renderState() {
@@ -940,6 +1030,7 @@ function renderState() {
   }
 
   const isHome = gameState.mode === "home";
+  document.body.classList.toggle("is-home", isHome);
   elements.homeView.hidden = !isHome;
   elements.gameView.hidden = isHome;
   elements.homeButton.hidden = isHome;
@@ -1052,33 +1143,50 @@ function loadLanguage() {
 
 function loadSavedTheme() {
   const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return savedTheme === "dark" || savedTheme === "light" ? savedTheme : "";
-}
-
-function getSystemTheme() {
-  return themeMedia?.matches ? "dark" : "light";
+  return THEME_OPTIONS.includes(savedTheme) ? savedTheme : GENSHIN_THEME;
 }
 
 function getActiveTheme() {
-  return selectedTheme || getSystemTheme();
+  return selectedTheme || GENSHIN_THEME;
 }
 
-function toggleTheme() {
-  selectedTheme = getActiveTheme() === "dark" ? "light" : "dark";
+function toggleThemeMenu() {
+  const isOpen = !elements.themeMenu.hidden;
+  elements.themeMenu.hidden = isOpen;
+  elements.themeButton.setAttribute("aria-expanded", String(!isOpen));
+}
+
+function closeThemeMenu() {
+  elements.themeMenu.hidden = true;
+  elements.themeButton.setAttribute("aria-expanded", "false");
+}
+
+function selectTheme(theme) {
+  if (!THEME_OPTIONS.includes(theme)) {
+    return;
+  }
+  selectedTheme = theme;
   window.localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+  closeThemeMenu();
   applyTheme();
 }
 
 function applyTheme() {
   document.documentElement.dataset.theme = getActiveTheme();
   updateThemeButton();
+  updateDiskCountLimit();
   scheduleDraw();
 }
 
 function updateThemeButton() {
-  const nextThemeKey = getActiveTheme() === "dark" ? "themeToLightButton" : "themeToDarkButton";
-  elements.themeButton.textContent = t(nextThemeKey);
+  elements.themeButton.textContent = t("themeButton");
   elements.themeButton.setAttribute("aria-label", t("themeToggleLabel"));
+  elements.themeMenu.querySelectorAll("[data-theme-option]").forEach((button) => {
+    const theme = button.dataset.themeOption;
+    const labelKey = theme === "light" ? "themeLightOption" : theme === "dark" ? "themeDarkOption" : "themeGenshinOption";
+    button.textContent = t(labelKey);
+    button.setAttribute("aria-checked", String(theme === getActiveTheme()));
+  });
 }
 
 function toggleLanguage() {
@@ -1095,6 +1203,9 @@ function applyLanguage() {
   document.documentElement.lang = currentLanguage === "zh" ? "zh-CN" : "en";
   document.title = t("appTitle");
   document.querySelectorAll("[data-i18n]").forEach((element) => {
+    if (element.dataset.i18n === "diskCountHint") {
+      return;
+    }
     element.textContent = t(element.dataset.i18n);
   });
   document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
@@ -1102,6 +1213,7 @@ function applyLanguage() {
   });
   elements.languageButton.textContent = t("languageButton");
   updateThemeButton();
+  updateDiskCountLimit();
   renderPegButtons();
 }
 
@@ -1158,6 +1270,17 @@ function t(key, args = {}) {
   });
 }
 
+function loadImage(src) {
+  const image = new Image();
+  image.src = src;
+  image.addEventListener("load", () => {
+    genshinGearCache.clear();
+    scheduleDraw();
+  });
+  image.addEventListener("error", scheduleDraw);
+  return image;
+}
+
 function setLocalStatus(key, args = {}) {
   localStatusKey = key;
   localStatusArgs = args;
@@ -1207,6 +1330,11 @@ function draw() {
   diskRects = [];
 
   const colors = getBoardColors();
+  if (getActiveTheme() === GENSHIN_THEME) {
+    drawGenshinBoard(width, height, colors);
+    return;
+  }
+
   drawBackground(width, height, colors);
 
   const centers = getPegCenters(width);
@@ -1219,18 +1347,15 @@ function draw() {
   roundRect(ctx, 44, baseY, width - 88, 14, 7);
   ctx.fill();
 
-  const targetPegs = gameState.mode === "play" ? [] : getDisplayTargetPegs();
-
+  const highlightedPeg = getHighlightedPeg();
   centers.forEach((x, index) => {
-    const isTarget = targetPegs.includes(index);
-    const isSelected = gameState.mode === "play" && selectedPeg === index;
-    const isGreenPeg = isTarget || isSelected;
+    const isHighlighted = highlightedPeg === index;
 
-    ctx.fillStyle = isGreenPeg ? colors.target : colors.peg;
+    ctx.fillStyle = isHighlighted ? colors.target : colors.peg;
     roundRect(ctx, x - 7, pegTopY, 14, pegHeight, 7);
     ctx.fill();
 
-    ctx.fillStyle = isGreenPeg ? colors.targetLabel : colors.pegLabel;
+    ctx.fillStyle = isHighlighted ? colors.targetLabel : colors.pegLabel;
     ctx.font = "700 14px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
@@ -1240,19 +1365,14 @@ function draw() {
   const maxDiskWidth = Math.min(290, width / 3 - 52);
   const minDiskWidth = 48;
   const widthStep = (maxDiskWidth - minDiskWidth) / Math.max(1, gameState.disk_count - 1);
-  const guideOrigin = getGuideMoveOrigin();
-
-  if (guideOrigin) {
-    const originRect = getDiskRect(
-      centers[guideOrigin.peg],
-      baseY,
-      diskHeight,
-      minDiskWidth,
-      widthStep,
-      guideOrigin.disk,
-      guideOrigin.level,
+  const guideMove = getCurrentGuideMove();
+  if (guideMove) {
+    drawGuideMoveArrow(
+      centers[guideMove.source],
+      centers[guideMove.target],
+      pegTopY - 20,
+      colors,
     );
-    drawGuideOrigin(originRect, guideOrigin.disk, colors);
   }
 
   gameState.pegs.forEach((peg, pegIndex) => {
@@ -1283,34 +1403,599 @@ function draw() {
   }
 }
 
-function getGuideMoveOrigin() {
+function drawGenshinBoard(width, height, colors) {
+  if (!genshinAssets.background.complete || !genshinAssets.background.naturalWidth) {
+    drawBackground(width, height, colors);
+    return;
+  }
+
+  const layout = getGenshinLayout(width, height);
+  drawGenshinBackdrop(width, height);
+  ctx.drawImage(
+    genshinAssets.background,
+    layout.imageX,
+    layout.imageY,
+    layout.imageWidth,
+    layout.imageHeight,
+  );
+
+  drawGenshinColumns(layout);
+
+  const highlightedPeg = getHighlightedPeg();
+  layout.centers.forEach((centerX, index) => {
+    if (highlightedPeg === index) {
+      drawGenshinPegHighlight(centerX, layout, colors);
+    }
+  });
+
+  const guideMove = getCurrentGuideMove();
+  if (guideMove) {
+    drawGuideMoveArrow(
+      layout.centers[guideMove.source],
+      layout.centers[guideMove.target],
+      getGenshinGuideArrowY(layout),
+      colors,
+      { genshin: true, scale: layout.scale },
+    );
+  }
+
+  gameState.pegs.forEach((peg, pegIndex) => {
+    peg.forEach((disk, level) => {
+      if (dragState && dragState.disk === disk) {
+        return;
+      }
+
+      const rect = getGenshinDiskRect(layout, disk, pegIndex, level);
+      drawGenshinDisk(rect, disk, false, colors);
+      diskRects.push({ ...rect, disk, peg: pegIndex, level });
+    });
+  });
+
+  drawGenshinColumnFronts(layout);
+
+  if (dragState) {
+    drawGenshinDisk(
+      {
+        x: dragState.x - dragState.width / 2,
+        y: dragState.y - dragState.height / 2,
+        width: dragState.width,
+        height: dragState.height,
+      },
+      dragState.disk,
+      true,
+      colors,
+    );
+  }
+
+  drawGenshinDropEffects(performance.now());
+}
+
+function startGenshinDropEffect(disk, targetPeg) {
+  if (getActiveTheme() !== GENSHIN_THEME || !gameState || elements.gameView.hidden) {
+    return;
+  }
+
+  const canvasRect = elements.canvas.getBoundingClientRect();
+  if (canvasRect.width <= 0 || canvasRect.height <= 0) {
+    return;
+  }
+
+  const level = gameState.pegs[targetPeg]?.indexOf(disk) ?? -1;
+  if (level < 0) {
+    return;
+  }
+
+  const layout = getGenshinLayout(canvasRect.width, canvasRect.height);
+  const diskRect = getGenshinDiskRect(layout, disk, targetPeg, level);
+  const effectScale = Math.max(0.65, Math.min(1.25, diskRect.width / 240));
+  const radiusX = diskRect.width * 0.48;
+  const radiusY = diskRect.height * 0.42;
+  const particles = Array.from({ length: GENSHIN_DROP_SPARK_COUNT }, (_item, index) => {
+    const edgeStep = Math.PI * 2 / GENSHIN_DROP_SPARK_COUNT;
+    const edgeAngle = index * edgeStep + (Math.random() - 0.5) * edgeStep * 0.45;
+    const edgeRadius = 0.84 + Math.random() * 0.13;
+    const side = Math.cos(edgeAngle) >= 0 ? 1 : -1;
+    const baseAngle = side > 0
+      ? -GENSHIN_DROP_SPARK_ANGLE
+      : Math.PI + GENSHIN_DROP_SPARK_ANGLE;
+    const angle = baseAngle + (Math.random() - 0.5) * GENSHIN_DROP_SPARK_SPREAD;
+    return {
+      angle,
+      originOffsetX: Math.cos(edgeAngle) * radiusX * edgeRadius,
+      originOffsetY: Math.sin(edgeAngle) * radiusY * edgeRadius,
+      delay: Math.random() * 55,
+      travel: radiusX * (0.45 + Math.random() * 1.05),
+      tail: (10 + Math.random() * 22) * effectScale,
+      size: (1.4 + Math.random() * 2.8) * effectScale,
+      gravity: (4 + Math.random() * 12) * effectScale,
+      twinkle: index % 4 === 0,
+    };
+  });
+
+  genshinDropEffects.push({
+    startedAt: performance.now(),
+    x: diskRect.x + diskRect.width / 2,
+    y: diskRect.y + diskRect.height * 0.48,
+    radiusX,
+    radiusY,
+    scale: effectScale,
+    particles,
+  });
+  requestGenshinEffectFrame();
+}
+
+function requestGenshinEffectFrame() {
+  if (genshinEffectFrame !== null) {
+    return;
+  }
+
+  genshinEffectFrame = requestAnimationFrame((now) => {
+    genshinEffectFrame = null;
+    genshinDropEffects = genshinDropEffects.filter(
+      (effect) => now - effect.startedAt < GENSHIN_DROP_EFFECT_DURATION,
+    );
+    draw();
+    if (genshinDropEffects.length) {
+      requestGenshinEffectFrame();
+    }
+  });
+}
+
+function clearGenshinDropEffects() {
+  genshinDropEffects = [];
+  if (genshinEffectFrame !== null) {
+    cancelAnimationFrame(genshinEffectFrame);
+    genshinEffectFrame = null;
+  }
+}
+
+function drawGenshinDropEffects(now) {
+  genshinDropEffects.forEach((effect) => {
+    const elapsed = now - effect.startedAt;
+    const progress = Math.max(0, Math.min(1, elapsed / GENSHIN_DROP_EFFECT_DURATION));
+    const fade = (1 - progress) ** 1.7;
+    const expansionProgress = 1 - (1 - progress) ** 3;
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    const glowRadius = effect.radiusX * (0.7 + expansionProgress * 0.45);
+    const glow = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, glowRadius);
+    glow.addColorStop(0, `rgba(255, 248, 190, ${0.46 * fade})`);
+    glow.addColorStop(0.42, `rgba(255, 208, 88, ${0.28 * fade})`);
+    glow.addColorStop(1, "rgba(239, 137, 38, 0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.ellipse(
+      effect.x,
+      effect.y,
+      glowRadius,
+      effect.radiusY * (0.78 + expansionProgress * 0.35),
+      0,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+
+    effect.particles.forEach((particle, index) => {
+      const particleDuration = GENSHIN_DROP_EFFECT_DURATION - particle.delay;
+      const particleProgress = Math.max(0, Math.min(1, (elapsed - particle.delay) / particleDuration));
+      if (particleProgress <= 0 || particleProgress >= 1) {
+        return;
+      }
+
+      const eased = 1 - (1 - particleProgress) ** 2.4;
+      const alpha = Math.min(1, particleProgress * 7) * (1 - particleProgress) ** 1.45;
+      const directionX = Math.cos(particle.angle);
+      const directionY = Math.sin(particle.angle);
+      const originX = effect.x + particle.originOffsetX;
+      const originY = effect.y + particle.originOffsetY;
+      const x = originX + directionX * particle.travel * eased;
+      const y = originY + directionY * particle.travel * eased + particle.gravity * particleProgress ** 2;
+      const tailLength = particle.tail * (1 - particleProgress * 0.45);
+
+      ctx.strokeStyle = `rgba(255, 190, 56, ${0.86 * alpha})`;
+      ctx.lineWidth = Math.max(0.8, particle.size * 0.58);
+      ctx.beginPath();
+      ctx.moveTo(x - directionX * tailLength, y - directionY * tailLength);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+
+      ctx.fillStyle = `rgba(255, 244, 170, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, particle.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (particle.twinkle) {
+        drawGenshinDropSpark(
+          x,
+          y,
+          particle.size * (2.2 + Math.sin(particleProgress * Math.PI * 5) * 0.35),
+          particle.angle + index,
+          alpha,
+        );
+      }
+    });
+
+    ctx.restore();
+  });
+}
+
+function drawGenshinDropSpark(x, y, size, rotation, alpha) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.fillStyle = `rgba(255, 250, 205, ${alpha})`;
+  ctx.beginPath();
+  for (let index = 0; index < 8; index += 1) {
+    const angle = -Math.PI / 2 + index * Math.PI / 4;
+    const radius = index % 2 === 0 ? size : size * 0.24;
+    const pointX = Math.cos(angle) * radius;
+    const pointY = Math.sin(angle) * radius;
+    if (index === 0) {
+      ctx.moveTo(pointX, pointY);
+    } else {
+      ctx.lineTo(pointX, pointY);
+    }
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawGenshinBackdrop(width, height) {
+  const imageWidth = genshinAssets.background.naturalWidth || 1672;
+  const imageHeight = genshinAssets.background.naturalHeight || 941;
+  const scale = Math.max(width / imageWidth, height / imageHeight);
+  const drawnWidth = imageWidth * scale;
+  const drawnHeight = imageHeight * scale;
+
+  ctx.save();
+  ctx.globalAlpha = 0.28;
+  ctx.drawImage(
+    genshinAssets.background,
+    (width - drawnWidth) / 2,
+    (height - drawnHeight) / 2,
+    drawnWidth,
+    drawnHeight,
+  );
+  ctx.restore();
+}
+
+function getGenshinLayout(width, height) {
+  const imageWidth = genshinAssets.background.naturalWidth || 1448;
+  const imageHeight = genshinAssets.background.naturalHeight || 1086;
+  const scale = Math.min(width / imageWidth, height / imageHeight);
+  const drawnWidth = imageWidth * scale;
+  const drawnHeight = imageHeight * scale;
+  const imageX = (width - drawnWidth) / 2;
+  const imageY = (height - drawnHeight) / 2;
+  const mapX = (x) => imageX + x * scale;
+  const mapY = (y) => imageY + y * scale;
+  const stackBaseY = mapY(GENSHIN_GEAR_STACK_BASE_Y);
+  const topLimitY = Math.max(34, mapY(348));
+  const diskStep = Math.max(12, Math.min(26, (stackBaseY - topLimitY) / Math.max(1, gameState.disk_count - 1)));
+  const responsiveMaxDiskWidth = Math.min(width * 0.22, scale * 350);
+  const responsiveMinDiskWidth = Math.max(54, responsiveMaxDiskWidth * 0.46);
+  const diskWidths = getLockedGenshinDiskWidths(responsiveMinDiskWidth, responsiveMaxDiskWidth);
+  const maxDiskWidth = diskWidths[diskWidths.length - 1];
+  const maxDiskHeight = getGenshinDiskHeight(maxDiskWidth);
+  const stackCenterY = stackBaseY - maxDiskHeight / 2;
+  const stackHoleCenterY = stackCenterY + maxDiskHeight * (
+    GENSHIN_GEAR_HOLE_CENTER_Y / GENSHIN_GEAR_SOURCE_CROP.height - 0.5
+  );
+  const columnHeight = scale * 455;
+  const columnWidth = columnHeight * (169 / 1260);
+  const columnBottomY = mapY(630);
+
+  return {
+    imageX,
+    imageY,
+    imageWidth: drawnWidth,
+    imageHeight: drawnHeight,
+    scale,
+    centers: [mapX(420), mapX(836), mapX(1252)],
+    pegTopY: columnBottomY - columnHeight,
+    pegBottomY: columnBottomY,
+    stackHoleCenterY,
+    diskStep,
+    diskWidths,
+    columnWidth,
+    columnHeight,
+    columnBottomY,
+  };
+}
+
+function drawGenshinColumns(layout) {
+  if (!genshinAssets.column.complete || !genshinAssets.column.naturalWidth) {
+    return;
+  }
+
+  layout.centers.forEach((centerX) => {
+    ctx.drawImage(
+      genshinAssets.column,
+      centerX - layout.columnWidth / 2,
+      layout.columnBottomY - layout.columnHeight,
+      layout.columnWidth,
+      layout.columnHeight,
+    );
+  });
+}
+
+function drawGenshinColumnFront(layout, columnX, columnY) {
+  const image = genshinAssets.column;
+  const source = GENSHIN_COLUMN_SHAFT_SOURCE;
+  const topHeight = layout.columnHeight * (source.y / image.naturalHeight);
+  const shaftX = columnX + layout.columnWidth * (source.x / image.naturalWidth);
+  const shaftWidth = layout.columnWidth * (source.width / image.naturalWidth);
+
+  ctx.drawImage(
+    image,
+    0,
+    0,
+    image.naturalWidth,
+    source.y,
+    columnX,
+    columnY,
+    layout.columnWidth,
+    topHeight,
+  );
+  ctx.drawImage(
+    image,
+    source.x,
+    source.y,
+    source.width,
+    source.height,
+    shaftX,
+    columnY + topHeight,
+    shaftWidth,
+    layout.columnHeight - topHeight,
+  );
+}
+
+function drawGenshinColumnFronts(layout) {
+  if (!genshinAssets.column.complete || !genshinAssets.column.naturalWidth) {
+    return;
+  }
+
+  gameState.pegs.forEach((peg, pegIndex) => {
+    if (!peg.length) {
+      return;
+    }
+
+    let topLevel = peg.length - 1;
+    if (dragState && dragState.sourcePeg === pegIndex && peg[topLevel] === dragState.disk) {
+      topLevel -= 1;
+    }
+    if (topLevel < 0) {
+      return;
+    }
+
+    const centerX = layout.centers[pegIndex];
+    const columnX = centerX - layout.columnWidth / 2;
+    const columnY = layout.columnBottomY - layout.columnHeight;
+    const halfColumnWidth = layout.columnWidth / 2;
+    const arcDepth = halfColumnWidth * Math.max(0, Math.min(1, GENSHIN_COLUMN_JOIN_ARC_DEPTH_RATIO));
+    const holeCenterY = layout.stackHoleCenterY
+      - topLevel * layout.diskStep * GENSHIN_GEAR_STACK_SPACING_RATIO;
+    const arcY = holeCenterY + GENSHIN_COLUMN_JOIN_OFFSET_Y - arcDepth;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(columnX, columnY);
+    ctx.lineTo(columnX + layout.columnWidth, columnY);
+    ctx.lineTo(columnX + layout.columnWidth, arcY);
+    if (arcDepth > 0) {
+      const arcRadius = (halfColumnWidth ** 2 + arcDepth ** 2) / (2 * arcDepth);
+      const arcCenterY = arcY - (arcRadius - arcDepth);
+      const arcStartAngle = Math.atan2(arcY - arcCenterY, halfColumnWidth);
+      ctx.arc(centerX, arcCenterY, arcRadius, arcStartAngle, Math.PI - arcStartAngle);
+    } else {
+      ctx.lineTo(columnX, arcY);
+    }
+    ctx.closePath();
+    ctx.clip();
+    drawGenshinColumnFront(layout, columnX, columnY);
+    ctx.restore();
+  });
+}
+
+function getGenshinDiskRect(layout, disk, pegIndex, level) {
+  const imageWidth = getGenshinDiskWidth(layout, disk);
+  const imageHeight = getGenshinDiskHeight(imageWidth);
+  const visibleWidth = imageWidth * (GENSHIN_GEAR_VISIBLE_BOUNDS.width / GENSHIN_GEAR_SOURCE_CROP.width);
+  const visibleHeight = imageHeight * (GENSHIN_GEAR_VISIBLE_BOUNDS.height / GENSHIN_GEAR_SOURCE_CROP.height);
+  const holeCenterY = layout.stackHoleCenterY
+    - level * layout.diskStep * GENSHIN_GEAR_STACK_SPACING_RATIO;
+  const imageY = holeCenterY
+    - imageHeight * (GENSHIN_GEAR_HOLE_CENTER_Y / GENSHIN_GEAR_SOURCE_CROP.height);
+  return {
+    x: layout.centers[pegIndex] - visibleWidth / 2,
+    y: imageY + imageHeight * (GENSHIN_GEAR_VISIBLE_BOUNDS.y / GENSHIN_GEAR_SOURCE_CROP.height),
+    width: visibleWidth,
+    height: visibleHeight,
+  };
+}
+
+function getLockedGenshinDiskWidths(minDiskWidth, maxDiskWidth) {
+  const diskCount = gameState.disk_count;
+  if (!genshinDiskSizeCache || genshinDiskSizeCache.diskCount !== diskCount) {
+    const widthStep = (maxDiskWidth - minDiskWidth) / Math.max(1, diskCount - 1);
+    genshinDiskSizeCache = {
+      diskCount,
+      widths: Array.from({ length: diskCount }, (_item, index) => minDiskWidth + index * widthStep),
+    };
+  }
+
+  return genshinDiskSizeCache.widths;
+}
+
+function getGenshinDiskWidth(layout, disk) {
+  return layout.diskWidths[disk - 1];
+}
+
+function getGenshinDiskHeight(diskWidth) {
+  return diskWidth * GENSHIN_GEAR_HEIGHT_RATIO;
+}
+
+function getGenshinGearDrawRect(rect) {
+  const width = rect.width * (GENSHIN_GEAR_SOURCE_CROP.width / GENSHIN_GEAR_VISIBLE_BOUNDS.width);
+  const height = rect.height * (GENSHIN_GEAR_SOURCE_CROP.height / GENSHIN_GEAR_VISIBLE_BOUNDS.height);
+  return {
+    x: rect.x - width * (GENSHIN_GEAR_VISIBLE_BOUNDS.x / GENSHIN_GEAR_SOURCE_CROP.width),
+    y: rect.y - height * (GENSHIN_GEAR_VISIBLE_BOUNDS.y / GENSHIN_GEAR_SOURCE_CROP.height),
+    width,
+    height,
+  };
+}
+
+function drawGenshinPegHighlight(centerX, layout, colors) {
+  if (!genshinAssets.highlight.complete || !genshinAssets.highlight.naturalWidth) {
+    return;
+  }
+
+  const highlightWidth = Math.max(layout.columnWidth * 1.125, layout.scale * 31);
+  const highlightHeight = highlightWidth * (genshinAssets.highlight.naturalHeight / genshinAssets.highlight.naturalWidth);
+  const y = layout.pegTopY + layout.scale * GENSHIN_COLUMN_HIGHLIGHT_TOP_OFFSET - highlightHeight;
+
+  ctx.save();
+  ctx.shadowColor = "rgba(255, 238, 184, 0.58)";
+  ctx.shadowBlur = Math.max(4, layout.scale * 9);
+  ctx.drawImage(
+    genshinAssets.highlight,
+    centerX - highlightWidth / 2,
+    y,
+    highlightWidth,
+    highlightHeight,
+  );
+  ctx.restore();
+}
+
+function drawGenshinDisk(rect, disk, lifted, colors) {
+  const gear = getTintedGenshinGear(getDiskColor(disk));
+  const drawRect = getGenshinGearDrawRect(rect);
+
+  ctx.save();
+  ctx.shadowColor = lifted ? colors.diskShadowLifted : colors.diskShadow;
+  ctx.shadowBlur = lifted ? 18 : 10;
+  ctx.shadowOffsetY = lifted ? 10 : 4;
+  if (gear) {
+    ctx.drawImage(gear, drawRect.x, drawRect.y, drawRect.width, drawRect.height);
+  } else {
+    drawDisk(rect, disk, lifted, colors);
+    ctx.restore();
+    return;
+  }
+  ctx.shadowColor = "transparent";
+  ctx.restore();
+}
+
+function getTintedGenshinGear(color) {
+  if (!genshinAssets.gear.complete || !genshinAssets.gear.naturalWidth) {
+    return null;
+  }
+  if (genshinGearCache.has(color)) {
+    return genshinGearCache.get(color);
+  }
+
+  const crop = GENSHIN_GEAR_SOURCE_CROP;
+  const canvas = document.createElement("canvas");
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+  const offscreen = canvas.getContext("2d");
+  const sourceLayer = document.createElement("canvas");
+  sourceLayer.width = crop.width;
+  sourceLayer.height = crop.height;
+  const sourceContext = sourceLayer.getContext("2d");
+  sourceContext.drawImage(
+    genshinAssets.gear,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
+    0,
+    0,
+    crop.width,
+    crop.height,
+  );
+
+  offscreen.fillStyle = color;
+  offscreen.fillRect(0, 0, crop.width, crop.height);
+  offscreen.globalCompositeOperation = "destination-in";
+  offscreen.drawImage(
+    sourceLayer,
+    0,
+    0,
+  );
+
+  offscreen.globalCompositeOperation = "multiply";
+  offscreen.globalAlpha = GENSHIN_GEAR_TEXTURE_SHADOW_ALPHA;
+  offscreen.drawImage(sourceLayer, 0, 0);
+  offscreen.globalCompositeOperation = "screen";
+  offscreen.globalAlpha = GENSHIN_GEAR_TEXTURE_HIGHLIGHT_ALPHA;
+  offscreen.drawImage(sourceLayer, 0, 0);
+  offscreen.globalAlpha = 1;
+
+  genshinGearCache.set(color, canvas);
+  return canvas;
+}
+
+function getDiskColor(disk) {
+  const diskCount = Math.max(1, gameState?.disk_count || MAX_DISKS);
+  const position = diskCount === 1 ? 0 : (diskCount - disk) / (diskCount - 1);
+  const scaled = position * (diskGradientStops.length - 1);
+  const index = Math.min(diskGradientStops.length - 2, Math.max(0, Math.floor(scaled)));
+  return mixHexColors(
+    diskGradientStops[index],
+    diskGradientStops[index + 1],
+    scaled - index,
+  );
+}
+
+function mixHexColors(start, end, amount) {
+  const startRgb = hexToRgb(start);
+  const endRgb = hexToRgb(end);
+  const mix = (channel) => Math.round(startRgb[channel] + (endRgb[channel] - startRgb[channel]) * amount);
+  return rgbToHex(mix("r"), mix("g"), mix("b"));
+}
+
+function hexToRgb(color) {
+  return {
+    r: Number.parseInt(color.slice(1, 3), 16),
+    g: Number.parseInt(color.slice(3, 5), 16),
+    b: Number.parseInt(color.slice(5, 7), 16),
+  };
+}
+
+function rgbToHex(r, g, b) {
+  return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function getCurrentGuideMove() {
   if (!gameState?.is_guide || gameState.guide_step <= 0) {
     return null;
   }
 
-  const lastMove = session.game.history[session.game.history.length - 1];
-  if (!lastMove) {
+  const move = session.guideMoves[gameState.guide_step - 1];
+  if (!move) {
     return null;
   }
 
-  const peg = Number(lastMove.source);
-  const disk = Number(lastMove.disk);
+  const source = Number(move[0]);
+  const target = Number(move[1]);
   if (
-    !Number.isInteger(peg) ||
-    peg < 0 ||
-    peg >= PEG_COUNT ||
-    !Number.isInteger(disk) ||
-    disk < 1 ||
-    disk > gameState.disk_count
+    !Number.isInteger(source) ||
+    source < 0 ||
+    source >= PEG_COUNT ||
+    !Number.isInteger(target) ||
+    target < 0 ||
+    target >= PEG_COUNT ||
+    source === target
   ) {
     return null;
   }
 
-  return {
-    disk,
-    peg,
-    level: gameState.pegs[peg]?.length ?? 0,
-  };
+  return { source, target };
 }
 
 function getDiskRect(centerX, baseY, diskHeight, minDiskWidth, widthStep, disk, level) {
@@ -1323,22 +2008,147 @@ function getDiskRect(centerX, baseY, diskHeight, minDiskWidth, widthStep, disk, 
   };
 }
 
-function drawGuideOrigin(rect, disk, colors = getBoardColors()) {
+function getGenshinGuideArrowY(layout) {
+  const highlightWidth = Math.max(layout.columnWidth * 1.125, layout.scale * 31);
+  const highlightRatio = genshinAssets.highlight.naturalWidth
+    ? genshinAssets.highlight.naturalHeight / genshinAssets.highlight.naturalWidth
+    : 225 / 252;
+  const highlightHeight = highlightWidth * highlightRatio;
+  const highlightBottomY = layout.pegTopY + layout.scale * GENSHIN_COLUMN_HIGHLIGHT_TOP_OFFSET;
+  return highlightBottomY - highlightHeight / 2;
+}
+
+function drawGuideMoveArrow(sourceX, targetX, y, colors = getBoardColors(), options = {}) {
+  const direction = Math.sign(targetX - sourceX);
+  if (!direction) {
+    return;
+  }
+
+  const scale = Math.max(0.65, options.scale || 1);
+  const endpointGap = (options.genshin ? 34 : 24) * scale;
+  const startX = sourceX + direction * endpointGap;
+  const endX = targetX - direction * endpointGap;
+  if (options.genshin) {
+    drawGenshinGuideMoveArrow(startX, endX, y, direction, scale, colors);
+    return;
+  }
+
+  const headLength = 18 * scale;
+  const headWidth = 10 * scale;
+  const headBaseX = endX - direction * headLength;
+
   ctx.save();
-  ctx.shadowColor = "transparent";
-  ctx.fillStyle = colors.guideOriginFill;
-  ctx.strokeStyle = colors.guideOriginStroke;
-  ctx.lineWidth = 2;
-  ctx.setLineDash([7, 6]);
-  roundRect(ctx, rect.x, rect.y, rect.width, rect.height, 7);
-  ctx.fill();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.shadowColor = "rgba(15, 23, 42, 0.24)";
+  ctx.shadowBlur = 5 * scale;
+
+  ctx.beginPath();
+  ctx.moveTo(startX, y);
+  ctx.lineTo(headBaseX + direction * 3 * scale, y);
+  ctx.strokeStyle = colors.guideArrowStroke;
+  ctx.lineWidth = 6 * scale;
   ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = colors.guideOriginLabel;
-  ctx.font = `700 ${Math.max(9, Math.min(12, rect.height - 4))}px Arial`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(String(disk), rect.x + rect.width / 2, rect.y + rect.height / 2);
+
+  ctx.beginPath();
+  ctx.moveTo(startX, y);
+  ctx.lineTo(headBaseX + direction * 3 * scale, y);
+  ctx.strokeStyle = colors.guideArrowFill;
+  ctx.lineWidth = 3 * scale;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(endX, y);
+  ctx.lineTo(headBaseX, y - headWidth);
+  ctx.lineTo(headBaseX + direction * 5 * scale, y);
+  ctx.lineTo(headBaseX, y + headWidth);
+  ctx.closePath();
+  ctx.fillStyle = colors.guideArrowFill;
+  ctx.fill();
+  ctx.strokeStyle = colors.guideArrowStroke;
+  ctx.lineWidth = 2 * scale;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawGenshinGuideMoveArrow(startX, endX, y, direction, scale, colors) {
+  const length = Math.abs(endX - startX);
+  const headLength = Math.min(46 * scale, length * 0.3);
+  const headHalfHeight = 23 * scale;
+  const shaftHalfHeight = 7 * scale;
+  const tailCurveLength = Math.min(58 * scale, length * 0.34);
+  const headBaseX = length - headLength;
+
+  ctx.save();
+  ctx.translate(startX, y);
+  ctx.scale(direction, 1);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.shadowColor = "rgba(255, 145, 54, 0.52)";
+  ctx.shadowBlur = 12 * scale;
+
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(
+    10 * scale,
+    -4 * scale,
+    tailCurveLength * 0.44,
+    -shaftHalfHeight * 1.65,
+    tailCurveLength,
+    -shaftHalfHeight,
+  );
+  ctx.lineTo(headBaseX, -shaftHalfHeight);
+  ctx.lineTo(headBaseX, -headHalfHeight);
+  ctx.quadraticCurveTo(headBaseX + 7 * scale, -headHalfHeight * 0.82, length, 0);
+  ctx.quadraticCurveTo(headBaseX + 7 * scale, headHalfHeight * 0.82, headBaseX, headHalfHeight);
+  ctx.lineTo(headBaseX, shaftHalfHeight);
+  ctx.lineTo(tailCurveLength, shaftHalfHeight);
+  ctx.bezierCurveTo(
+    tailCurveLength * 0.44,
+    shaftHalfHeight * 1.65,
+    10 * scale,
+    4 * scale,
+    0,
+    0,
+  );
+  ctx.closePath();
+
+  const fillGradient = ctx.createLinearGradient(0, -headHalfHeight, 0, headHalfHeight);
+  fillGradient.addColorStop(0, colors.guideArrowAccent);
+  fillGradient.addColorStop(0.2, colors.guideArrowFill);
+  fillGradient.addColorStop(1, "#db6c2e");
+  ctx.fillStyle = fillGradient;
+  ctx.fill();
+
+  ctx.strokeStyle = colors.guideArrowAccent;
+  ctx.lineWidth = 12 * scale;
+  ctx.stroke();
+  ctx.strokeStyle = colors.guideArrowStroke;
+  ctx.lineWidth = 6 * scale;
+  ctx.stroke();
+
+  ctx.shadowColor = "transparent";
+  ctx.beginPath();
+  ctx.moveTo(tailCurveLength * 0.5, -shaftHalfHeight * 0.45);
+  ctx.bezierCurveTo(
+    length * 0.42,
+    -shaftHalfHeight * 0.85,
+    headBaseX - 10 * scale,
+    -shaftHalfHeight * 0.55,
+    headBaseX + 5 * scale,
+    -headHalfHeight * 0.43,
+  );
+  ctx.strokeStyle = "rgba(235, 255, 252, 0.5)";
+  ctx.lineWidth = 2.2 * scale;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(headBaseX + headLength * 0.42, -7 * scale);
+  ctx.lineTo(headBaseX + headLength * 0.58, -3 * scale);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.62)";
+  ctx.lineWidth = 1.8 * scale;
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -1346,7 +2156,7 @@ function drawDisk(rect, disk, lifted, colors = getBoardColors()) {
   ctx.shadowColor = lifted ? colors.diskShadowLifted : colors.diskShadow;
   ctx.shadowBlur = lifted ? 16 : 8;
   ctx.shadowOffsetY = lifted ? 8 : 3;
-  ctx.fillStyle = diskColors[(disk - 1) % diskColors.length];
+  ctx.fillStyle = getDiskColor(disk);
   roundRect(ctx, rect.x, rect.y, rect.width, rect.height, 7);
   ctx.fill();
   ctx.shadowColor = "transparent";
@@ -1373,9 +2183,9 @@ function getBoardColors() {
     diskLabel: cssColor("--disk-label", "#ffffff"),
     diskShadow: cssColor("--disk-shadow", "rgba(15, 23, 42, 0.12)"),
     diskShadowLifted: cssColor("--disk-shadow-lifted", "rgba(15, 23, 42, 0.26)"),
-    guideOriginFill: cssColor("--guide-origin-fill", "rgba(36, 107, 254, 0.07)"),
-    guideOriginStroke: cssColor("--guide-origin-stroke", "rgba(36, 107, 254, 0.38)"),
-    guideOriginLabel: cssColor("--guide-origin-label", "#94a3b8"),
+    guideArrowFill: cssColor("--guide-arrow-fill", "#246bfe"),
+    guideArrowStroke: cssColor("--guide-arrow-stroke", "#1649ad"),
+    guideArrowAccent: cssColor("--guide-arrow-accent", "#ffffff"),
   };
 }
 
@@ -1412,15 +2222,41 @@ function roundRect(context, x, y, width, height, radius) {
 }
 
 function getPegCenters(width) {
+  if (getActiveTheme() === GENSHIN_THEME && genshinAssets.background.complete && genshinAssets.background.naturalWidth) {
+    const height = elements.canvas.getBoundingClientRect().height;
+    return getGenshinLayout(width, height).centers;
+  }
   return [width * 0.2, width * 0.5, width * 0.8];
+}
+
+function getHighlightedPeg() {
+  if (gameState?.is_guide) {
+    return null;
+  }
+  if (gameState?.mode === PLAY_MODE && selectedPeg !== null) {
+    return selectedPeg;
+  }
+  return hoveredPeg;
 }
 
 function getPegFromClientX(clientX) {
   const rect = elements.canvas.getBoundingClientRect();
   const x = clientX - rect.left;
   const centers = getPegCenters(rect.width);
-  const zoneWidth = rect.width / 3;
-  return centers.findIndex((center) => Math.abs(x - center) <= zoneWidth / 2);
+  const leftEdge = centers[0] - (centers[1] - centers[0]) / 2;
+  const rightEdge = centers[centers.length - 1]
+    + (centers[centers.length - 1] - centers[centers.length - 2]) / 2;
+
+  if (x < leftEdge || x > rightEdge) {
+    return -1;
+  }
+
+  for (let index = 0; index < centers.length - 1; index += 1) {
+    if (x < (centers[index] + centers[index + 1]) / 2) {
+      return index;
+    }
+  }
+  return centers.length - 1;
 }
 
 function canvasPoint(event) {
@@ -1471,6 +2307,8 @@ function handlePointerDown(event) {
 }
 
 function handlePointerMove(event) {
+  updateHoveredPegFromEvent(event);
+
   if (!dragState) {
     return;
   }
@@ -1478,6 +2316,32 @@ function handlePointerMove(event) {
   const point = canvasPoint(event);
   dragState.x = point.x;
   dragState.y = point.y;
+  draw();
+}
+
+function updateHoveredPegFromEvent(event) {
+  if (!gameState || gameState.mode === "home" || elements.gameView.hidden) {
+    setHoveredPeg(null);
+    return;
+  }
+  if (gameState.is_guide) {
+    setHoveredPeg(null);
+    return;
+  }
+  if (gameState.mode === PLAY_MODE && selectedPeg !== null) {
+    return;
+  }
+
+  const peg = getPegFromClientX(event.clientX);
+  setHoveredPeg(peg < 0 ? null : peg);
+}
+
+function setHoveredPeg(peg) {
+  if (hoveredPeg === peg) {
+    return;
+  }
+
+  hoveredPeg = peg;
   draw();
 }
 
@@ -1522,6 +2386,7 @@ function handleBoardClick(event) {
       return;
     }
     selectedPeg = peg;
+    hoveredPeg = null;
     setLocalStatus("selectedPeg", { peg: peg + 1 });
     draw();
     return;
@@ -1529,6 +2394,7 @@ function handleBoardClick(event) {
 
   const source = selectedPeg;
   selectedPeg = null;
+  hoveredPeg = null;
   draw();
   moveDisk(source, peg).catch((error) => {
     elements.statusText.textContent = error.message;
@@ -1541,12 +2407,31 @@ elements.homeButton.addEventListener("click", () => {
   });
 });
 elements.languageButton.addEventListener("click", toggleLanguage);
-elements.themeButton.addEventListener("click", toggleTheme);
+elements.themeButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  toggleThemeMenu();
+});
+elements.themeMenu.addEventListener("click", (event) => {
+  const option = event.target.closest("[data-theme-option]");
+  if (!option) {
+    return;
+  }
+  selectTheme(option.dataset.themeOption);
+});
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".theme-picker")) {
+    closeThemeMenu();
+  }
+});
 elements.homeNewGameButton.addEventListener("click", () => openConfig("play"));
 elements.homeDemoButton.addEventListener("click", () => openConfig("demo"));
 elements.homeSolverButton.addEventListener("click", () => openConfig("solver"));
 elements.cancelConfigButton.addEventListener("click", closeConfig);
 elements.configForm.addEventListener("submit", submitConfig);
+elements.modalDiskCount.addEventListener("input", () => {
+  updateDiskCountLimit();
+  validateConfigSilently();
+});
 elements.undoButton.addEventListener("click", () => {
   handlePlayAction().catch((error) => {
     elements.statusText.textContent = error.message;
@@ -1576,23 +2461,15 @@ elements.canvas.addEventListener("pointerdown", handlePointerDown);
 elements.canvas.addEventListener("pointermove", handlePointerMove);
 elements.canvas.addEventListener("pointerup", handlePointerUp);
 elements.canvas.addEventListener("pointercancel", () => {
+  setHoveredPeg(null);
   dragState = null;
   draw();
 });
+elements.canvas.addEventListener("pointerleave", () => {
+  setHoveredPeg(null);
+});
 elements.canvas.addEventListener("click", handleBoardClick);
 window.addEventListener("resize", resizeCanvas);
-if (themeMedia) {
-  const handleSystemThemeChange = () => {
-    if (!selectedTheme) {
-      applyTheme();
-    }
-  };
-  if (themeMedia.addEventListener) {
-    themeMedia.addEventListener("change", handleSystemThemeChange);
-  } else {
-    themeMedia.addListener(handleSystemThemeChange);
-  }
-}
 
 setInterval(updateTimer, 250);
 applyTheme();

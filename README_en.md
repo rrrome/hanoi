@@ -1,53 +1,110 @@
-# Tower of Hanoi
+# Stack Tower
 
 [中文](README.md)
 
-A fully static Tower of Hanoi game that runs directly in the browser. It does not require a server or backend deployment and is suitable for GitHub Pages.
+Stack Tower is a static browser puzzle game based on the classic Tower of Hanoi rules. It adds a Genshin-inspired theme, an interactive tutorial, and an endgame solver. No server or backend is required: the project can be opened locally or hosted directly with GitHub Pages.
 
-![Tower of Hanoi demo](Demo.png)
+**Play online:** [https://rrrome.github.io/hanoi/](https://rrrome.github.io/hanoi/)
 
-## Features
+## Highlights
 
-- Home screen entries for New Game, Tutorial Demo, and Endgame Solver.
-- Configurable disk count from 2 to 16.
-- New games support configurable initial and target pegs. The timer pauses on completion, and the completed game can be restarted with the same settings.
-- Supports undoing the previous move without counting it in the total move count.
-- Tracks total moves, total time, and the theoretical minimum move count.
-- Tutorial Demo generates the shortest path for the configured disk count, initial peg, and target peg, with Previous, Next, and slider preview controls.
-- Endgame Solver lets users drag disks into a legal custom state and calculates the shortest completion path from that state.
-- Supports Chinese/English switching and dark/light theme switching.
+- Includes New Game, Tutorial Demo, and Endgame Solver modes.
+- Supports 2 to 10 disks, with 7 selected by default.
+- Provides Chinese and English interfaces with Genshin, light, and dark themes.
+- Tracks moves, elapsed time, and the theoretical minimum move count.
+- Shows optimal solutions with directional arrows, step controls, and a progress slider.
+- Adds a themed gear board, interface elements, and landing spark effects in the Genshin theme.
+- Runs entirely in the browser without uploading gameplay data.
 
-## Run
+## Screenshots
 
-[Click here to run in your browser](https://rrrome.github.io/hanoi/)
+### Home Page
 
-You can also download the project and open the root `index.html` file directly in a browser.
+![Stack Tower home page](Demo.png)
+
+The Genshin-inspired home page provides quick access to all three game modes, language settings, and theme controls.
+
+### New Game
+
+![Stack Tower new game mode](Demo_newgame.png)
+
+New Game supports 2 to 10 gears and displays the current move count, elapsed time, and theoretical minimum moves in real time.
+
+### Tutorial Demo
+
+![Stack Tower tutorial mode](Demo_tutor.png)
+
+Tutorial mode uses arrows to show each move and lets players browse the full solution with previous/next controls or the progress slider.
+
+## Game Modes
+
+### New Game
+
+Select the disk count, starting peg, and target peg before playing. Only the top gear on a peg can be moved, and a larger gear cannot be placed on a smaller one. Moves can be undone without increasing the recorded move count.
+
+### Tutorial Demo
+
+Generates the minimum-move solution for the selected disk count, starting peg, and target peg. The current move is visualized with an arrow and can be reviewed step by step or selected with the progress slider.
+
+### Endgame Solver
+
+Arrange the gears into any legal endgame position, then let the solver calculate a minimum-move path from that state to the target peg. This mode is useful for practice and for exploring different positions.
+
+## Running Locally
+
+No dependencies are required. Download or clone the repository, then open `index.html` in a browser:
+
+```bash
+git clone https://github.com/rrrome/hanoi.git
+cd hanoi
+open index.html
+```
+
+On Windows, double-click `index.html` or serve the directory with any local static file server.
 
 ## Project Structure
 
 ```text
-index.html
-style.css
-app.js
+.
+├── index.html              # Page structure
+├── style.css               # Interface, themes, and animations
+├── app.js                  # Game rules, interactions, and solver
+├── genshin_theme/          # Genshin-inspired images and interface assets
+├── Demo.png                # Home page screenshot
+├── Demo_newgame.png        # New Game screenshot
+├── Demo_tutor.png          # Tutorial screenshot
+├── ASSETS_NOTICE.md        # Third-party and derivative asset notice
+└── python_reference/       # Earlier Python version for reference only
 ```
 
-These three files are the active static app.
+The current web application only uses `index.html`, `style.css`, `app.js`, and its static assets. It does not execute or depend on code in `python_reference/`.
 
-The `python_reference/` directory keeps the earlier Python backend version for reference only. The current page does not import, request, or depend on any Python code.
+## Validation
 
-## Check
+Check the JavaScript syntax:
 
 ```bash
 node --check app.js
 ```
 
-To check the reference Python version:
+Run the tests for the reference Python version:
 
 ```bash
-cd python_reference
-python3 -m unittest
+python3 -m unittest discover -s python_reference -p 'test_*.py'
 ```
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+The project's original source code is free and open source under the [MIT License](LICENSE). Third-party and derivative assets are outside the scope of the MIT License; see the [Asset Copyright Notice](ASSETS_NOTICE.md).
+
+## Copyright and Non-Commercial Notice
+
+This project is completely free. It contains no advertising, paid features, sponsorships, or other commercial activity. Its original source code is released under the [MIT License](LICENSE).
+
+This is an unofficial fan-made learning project and is not affiliated with, sponsored by, endorsed by, or authorized by miHoYo, HoYoverse, COGNOSPHERE, or their affiliates. “Genshin Impact” and related game names, characters, scenes, interface designs, artwork, and trademarks remain the property of their respective rights holders.
+
+Some assets in `genshin_theme/` and the Demo images are derivative works based on Genshin Impact screenshots. Others were redrawn with generative-AI assistance and then edited by hand. They are used only for this project's non-commercial theme presentation. The project claims no rights over content originating from the game; this notice does not imply authorization from the relevant rights holders or constitute a legal determination of the materials' status.
+
+The MIT License applies only to the project's original source code and does not automatically grant rights to copy, sublicense, or commercially use third-party or derivative assets. See [ASSETS_NOTICE.md](ASSETS_NOTICE.md) for the complete scope and contact details.
+
+> © All rights reserved by COGNOSPHERE. Other properties belong to their respective owners.

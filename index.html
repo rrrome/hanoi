@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>汉诺塔</title>
+    <title>堆栈塔</title>
     <script>
       (() => {
         const savedTheme = window.localStorage.getItem("hanoi-theme");
-        const theme = savedTheme === "dark" || savedTheme === "light"
+        const theme = savedTheme === "dark" || savedTheme === "light" || savedTheme === "genshin"
           ? savedTheme
-          : window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light";
+          : "genshin";
         document.documentElement.dataset.theme = theme;
       })();
     </script>
@@ -20,14 +20,21 @@
       <header class="topbar">
         <div>
           <div class="brand-row">
-            <h1 data-i18n="appTitle">汉诺塔</h1>
+            <h1 data-i18n="appTitle">堆栈塔</h1>
             <button id="languageButton" class="secondary-button language-button" type="button">English</button>
             <button id="homeButton" class="secondary-button" type="button" data-i18n="homeButton" hidden>主页</button>
           </div>
           <p id="statusText" data-i18n="loading">加载中...</p>
         </div>
         <div class="top-actions">
-          <button id="themeButton" class="secondary-button theme-button" type="button" aria-label="切换深色/浅色模式">深色</button>
+          <div class="theme-picker">
+            <button id="themeButton" class="secondary-button theme-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="选择主题">主题</button>
+            <div id="themeMenu" class="theme-menu" role="menu" hidden>
+              <button type="button" role="menuitemradio" data-theme-option="light">浅色</button>
+              <button type="button" role="menuitemradio" data-theme-option="dark">深色</button>
+              <button type="button" role="menuitemradio" data-theme-option="genshin">原神</button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -71,7 +78,7 @@
           </div>
         </section>
 
-        <section class="board-panel" aria-label="汉诺塔棋盘" data-i18n-aria-label="boardLabel">
+        <section class="board-panel" aria-label="堆栈塔棋盘" data-i18n-aria-label="boardLabel">
           <canvas id="board" width="1200" height="620"></canvas>
         </section>
 
@@ -88,10 +95,19 @@
         <h2 id="configTitle">新游戏</h2>
         <p id="configHint"></p>
 
-        <label class="field">
-          <span data-i18n="diskCountLabel">盘子数量</span>
-          <input id="modalDiskCount" type="number" min="2" max="16" value="3" required />
-          <small data-i18n="diskCountHint">请输入 2 到 16 之间的整数。</small>
+        <label class="field disk-count-field">
+          <span class="field-heading">
+            <span data-i18n="diskCountLabel">盘子数量</span>
+            <output id="modalDiskCountValue" for="modalDiskCount">7</output>
+          </span>
+          <span class="disk-count-control">
+            <input id="modalDiskCount" type="range" min="2" max="10" step="1" value="7" aria-describedby="diskCountHint" required />
+            <span class="range-limits" aria-hidden="true">
+              <span>2</span>
+              <span>10</span>
+            </span>
+          </span>
+          <small id="diskCountHint" data-i18n="diskCountHint">拖动滑块选择 2 到 10 个盘子。</small>
         </label>
 
         <div class="field">

@@ -24,7 +24,7 @@ GUIDE_MODES = {DEMO_MODE, SOLVER_MODE}
 
 class GameSession:
     def __init__(self) -> None:
-        self.game = HanoiGame(3)
+        self.game = HanoiGame()
         self.mode = HOME_MODE
         self.start_time = time.monotonic()
         self.finished = False

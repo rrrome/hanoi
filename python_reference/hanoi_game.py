@@ -5,7 +5,8 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 
 
 MIN_DISKS = 2
-MAX_DISKS = 16
+MAX_DISKS = 10
+DEFAULT_DISKS = 7
 PEG_COUNT = 3
 
 
@@ -124,7 +125,7 @@ def _other_peg(first: int, second: int) -> int:
 
 @dataclass
 class HanoiGame:
-    disk_count: int = 3
+    disk_count: int = DEFAULT_DISKS
     initial_peg: int = 0
     target_pegs: Tuple[int, ...] = (1, 2)
     pegs: List[List[int]] = field(default_factory=list)

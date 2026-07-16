@@ -140,7 +140,7 @@ def run(port: int, open_browser: bool) -> None:
     server.session = GameSession()  # type: ignore[attr-defined]
 
     url = f"http://127.0.0.1:{selected_port}"
-    print(f"汉诺塔已启动：{url}")
+    print(f"堆栈塔已启动：{url}")
     print("按 Ctrl+C 停止服务器")
 
     if open_browser:

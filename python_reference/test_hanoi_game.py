@@ -19,6 +19,13 @@ class HanoiGameTest(unittest.TestCase):
         self.assertEqual(game.move_count, 0)
         self.assertEqual(game.minimum_moves, 31)
 
+    def test_minimum_disk_game_is_supported(self) -> None:
+        game = HanoiGame(2, initial_peg=0, target_pegs=(2,))
+
+        self.assertEqual(game.pegs, [[2, 1], [], []])
+        self.assertEqual(game.minimum_moves, 3)
+        self.assertEqual(build_minimum_solution(2), [(0, 1), (0, 2), (1, 2)])
+
     def test_rejects_disk_counts_outside_supported_range(self) -> None:
         for count in (MIN_DISKS - 1, MAX_DISKS + 1):
             with self.assertRaises(ValueError):
@@ -78,6 +85,7 @@ class GameSessionTest(unittest.TestCase):
 
         self.assertEqual(state["mode"], "home")
         self.assertTrue(state["is_home"])
+        self.assertEqual(state["disk_count"], 7)
 
     def test_start_play_uses_config_and_freezes_timer_on_completion(self) -> None:
         session = GameSession()
