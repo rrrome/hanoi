@@ -1474,7 +1474,7 @@ function drawGenshinAssetLoading(width, height, colors) {
   });
 
   ctx.fillStyle = colors.pegLabel;
-  ctx.font = `600 ${Math.max(15, Math.min(20, width / 55))}px Arial, "Microsoft YaHei", sans-serif`;
+  ctx.font = `600 ${Math.max(15, Math.min(20, width / 55))}px "HYWenHei-65W", "Hanyi WenHei 65W", "汉仪文黑 65W", Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(t("themeAssetsLoading"), centerX, centerY + 24);

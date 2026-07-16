@@ -93,6 +93,10 @@ Run the tests for the reference Python version:
 python3 -m unittest discover -s python_reference -p 'test_*.py'
 ```
 
+## Font Usage
+
+The interface font stack prefers Hanyi WenHei 65W, using the local font-family names `HYWenHei-65W`, `Hanyi WenHei 65W`, and `汉仪文黑 65W`. The project only references locally installed fonts through CSS and Canvas. It does not include, copy, convert, embed, or redistribute any Hanyi font files, and it does not self-host the font with `@font-face`.
+
 ## License
 
 The project's original source code is free and open source under the [MIT License](LICENSE). Third-party and derivative assets are outside the scope of the MIT License; see the [Asset Copyright Notice](ASSETS_NOTICE.md).

@@ -93,6 +93,10 @@ node --check app.js
 python3 -m unittest discover -s python_reference -p 'test_*.py'
 ```
 
+## 字体使用
+
+界面字体栈优先使用 `汉仪文黑 65W`（对应字体名称包括 `HYWenHei-65W`、`Hanyi WenHei 65W` 和 `汉仪文黑 65W`）。项目仅通过 CSS 和 Canvas 指定本机字体名称，不包含、复制、转换、嵌入或分发任何汉仪字体文件，也没有使用 `@font-face` 托管字体。
+
 ## 开源协议
 
 本项目原创源代码依据 [MIT License](LICENSE) 免费开源。第三方及衍生素材不属于 MIT 授权范围，详情见 [素材版权声明](ASSETS_NOTICE.md)。

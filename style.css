@@ -138,6 +138,17 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+button,
+input,
+select,
+textarea,
+a,
+label {
+  touch-action: manipulation;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -147,7 +158,7 @@ body {
   min-height: 100vh;
   color: var(--text);
   background: var(--bg);
-  font-family: Arial, "Microsoft YaHei", sans-serif;
+  font-family: "HYWenHei-65W", "Hanyi WenHei 65W", "汉仪文黑 65W", Arial, sans-serif;
 }
 
 :root[data-theme="genshin"] body {
