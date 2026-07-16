@@ -258,10 +258,10 @@ const elements = {
 const ctx = elements.canvas.getContext("2d");
 let genshinAssetFallbackAllowed = false;
 const genshinAssets = {
-  background: loadImage("genshin_theme/background.PNG"),
-  column: loadImage("genshin_theme/column_alpha.png"),
-  gear: loadImage("genshin_theme/gear.png"),
-  highlight: loadImage("genshin_theme/column_highlight.png"),
+  background: loadImage("genshin_theme/background.webp"),
+  column: loadImage("genshin_theme/column_alpha.webp"),
+  gear: loadImage("genshin_theme/gear.webp"),
+  highlight: loadImage("genshin_theme/column_highlight.webp"),
 };
 const genshinGearCache = new Map();
 

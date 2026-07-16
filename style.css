@@ -164,7 +164,7 @@ body {
   pointer-events: none;
   background-image:
     linear-gradient(rgba(10, 23, 33, 0.42), rgba(8, 17, 25, 0.58)),
-    url("genshin_theme/homepage.png");
+    url("genshin_theme/homepage.webp");
   background-position: center;
   background-size: cover;
   filter: blur(12px) brightness(0.62) saturate(0.82);
@@ -175,7 +175,7 @@ body {
   inset: 0;
   background-image:
     linear-gradient(rgba(19, 39, 54, 0.12), rgba(16, 30, 39, 0.2)),
-    url("genshin_theme/homepage.png");
+    url("genshin_theme/homepage.webp");
   filter: none;
   transform: none;
 }
