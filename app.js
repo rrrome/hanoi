@@ -25,6 +25,11 @@ const GENSHIN_ASSET_RETRY_DELAYS = [1500, 4500];
 const GENSHIN_ASSET_FALLBACK_DELAY = 30_000;
 const GENSHIN_GEAR_HOLE_BOUNDS = { x: 263, y: 105, width: 533, height: 223 };
 const GENSHIN_GEAR_HOLE_CENTER_Y = GENSHIN_GEAR_HOLE_BOUNDS.y + GENSHIN_GEAR_HOLE_BOUNDS.height / 2;
+const COMPACT_LANDSCAPE_MEDIA_QUERY = "(orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse)";
+const STANDARD_BOARD_TOP_PADDING = 8;
+const STANDARD_DISK_MIN_HEIGHT = 10;
+const GENSHIN_COMPACT_MIN_GEAR_WIDTH = 34;
+const GENSHIN_COMPACT_MIN_GEAR_WIDTH_RATIO = 0.34;
 const HOME_MODE = "home";
 const PLAY_MODE = "play";
 const DEMO_MODE = "demo";
@@ -1465,7 +1470,7 @@ function drawStandardBoard(width, height, colors) {
   const centers = getPegCenters(width);
   const baseY = height - 68;
   const pegTopY = 56;
-  const diskHeight = Math.max(12, Math.min(24, (baseY - pegTopY - 16) / gameState.disk_count));
+  const diskHeight = getStandardDiskHeight(baseY, pegTopY, gameState.disk_count);
   const pegHeight = baseY - pegTopY;
 
   ctx.fillStyle = colors.base;
@@ -1526,6 +1531,12 @@ function drawStandardBoard(width, height, colors) {
       colors,
     );
   }
+}
+
+function getStandardDiskHeight(baseY, pegTopY, diskCount) {
+  const preferredHeight = (baseY - pegTopY - 16) / diskCount;
+  const maximumFittingHeight = (baseY - STANDARD_BOARD_TOP_PADDING) / diskCount;
+  return Math.min(24, Math.max(STANDARD_DISK_MIN_HEIGHT, preferredHeight), maximumFittingHeight);
 }
 
 function drawGenshinAssetLoading(width, height, colors) {
@@ -1832,8 +1843,18 @@ function getGenshinLayout(width, height) {
   const topLimitY = Math.max(34, mapY(348));
   const diskStep = Math.max(12, Math.min(26, (stackBaseY - topLimitY) / Math.max(1, gameState.disk_count - 1)));
   const responsiveMaxDiskWidth = Math.min(width * 0.22, scale * 350);
-  const responsiveMinDiskWidth = Math.max(54, responsiveMaxDiskWidth * 0.46);
-  const diskWidths = getLockedGenshinDiskWidths(responsiveMinDiskWidth, responsiveMaxDiskWidth);
+  const compactLandscape = usesCompactLandscapeLayout();
+  const responsiveMinDiskWidth = compactLandscape
+    ? Math.min(
+      responsiveMaxDiskWidth,
+      Math.max(GENSHIN_COMPACT_MIN_GEAR_WIDTH, responsiveMaxDiskWidth * GENSHIN_COMPACT_MIN_GEAR_WIDTH_RATIO),
+    )
+    : Math.max(54, responsiveMaxDiskWidth * 0.46);
+  const diskWidths = getLockedGenshinDiskWidths(
+    responsiveMinDiskWidth,
+    responsiveMaxDiskWidth,
+    compactLandscape ? "compact-landscape" : "regular",
+  );
   const maxDiskWidth = diskWidths[diskWidths.length - 1];
   const maxDiskHeight = getGenshinDiskHeight(maxDiskWidth);
   const stackCenterY = stackBaseY - maxDiskHeight / 2;
@@ -1973,17 +1994,26 @@ function getGenshinDiskRect(layout, disk, pegIndex, level) {
   };
 }
 
-function getLockedGenshinDiskWidths(minDiskWidth, maxDiskWidth) {
+function getLockedGenshinDiskWidths(minDiskWidth, maxDiskWidth, layoutProfile) {
   const diskCount = gameState.disk_count;
-  if (!genshinDiskSizeCache || genshinDiskSizeCache.diskCount !== diskCount) {
+  if (
+    !genshinDiskSizeCache
+    || genshinDiskSizeCache.diskCount !== diskCount
+    || genshinDiskSizeCache.layoutProfile !== layoutProfile
+  ) {
     const widthStep = (maxDiskWidth - minDiskWidth) / Math.max(1, diskCount - 1);
     genshinDiskSizeCache = {
       diskCount,
+      layoutProfile,
       widths: Array.from({ length: diskCount }, (_item, index) => minDiskWidth + index * widthStep),
     };
   }
 
   return genshinDiskSizeCache.widths;
+}
+
+function usesCompactLandscapeLayout() {
+  return window.matchMedia?.(COMPACT_LANDSCAPE_MEDIA_QUERY).matches ?? false;
 }
 
 function getGenshinDiskWidth(layout, disk) {
