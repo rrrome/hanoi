@@ -56,6 +56,8 @@ class GameSession:
             "target_peg": self.guide_target_peg if self.mode in {DEMO_MODE, SETUP_MODE, SOLVER_MODE} else None,
             "pegs": self.game.snapshot(),
             "move_count": self.game.move_count,
+            "can_undo": bool(self.game.history),
+            "can_redo": bool(self.game.redo_history),
             "minimum_moves": self.game.minimum_moves,
             "elapsed_seconds": self._elapsed_seconds(),
             "is_complete": self.game.is_complete,
@@ -124,6 +126,26 @@ class GameSession:
             self.finished = False
             self.finished_elapsed_seconds = None
             return self.state("已撤回上一步", "undoSucceeded")
+
+    def redo(self) -> dict[str, Any]:
+        with self.lock:
+            if self.mode != PLAY_MODE:
+                return self.state("当前模式不能返回下一步", "redoBlocked")
+
+            if not self.game.redo():
+                return self.state("没有可返回的步骤", "nothingToRedo")
+
+            if self.game.is_complete:
+                self.finished = True
+                self.finished_elapsed_seconds = self._elapsed_seconds()
+                peg_number = (self.game.completion_peg or 0) + 1
+                return self.state(
+                    f"完成！已移到第 {peg_number} 根柱子",
+                    "completeOnPeg",
+                    {"peg": peg_number},
+                )
+
+            return self.state("已返回下一步", "redoSucceeded")
 
     def start_demo(self, disk_count: int, initial_peg: int, target_peg: int) -> dict[str, Any]:
         with self.lock:

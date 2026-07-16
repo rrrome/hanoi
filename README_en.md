@@ -40,7 +40,7 @@ Tutorial mode uses arrows to show each move and lets players browse the full sol
 
 ### New Game
 
-Select the disk count, starting peg, and target peg before playing. Only the top gear on a peg can be moved, and a larger gear cannot be placed on a smaller one. Moves can be undone without increasing the recorded move count.
+Select the disk count, starting peg, and target peg before playing. Only the top gear on a peg can be moved, and a larger gear cannot be placed on a smaller one. Moves can be undone and redone; making a new move clears the redo history.
 
 ### Tutorial Demo
 

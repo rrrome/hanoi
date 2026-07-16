@@ -59,6 +59,24 @@ class HanoiGameTest(unittest.TestCase):
         self.assertEqual(game.pegs, [[3, 2], [1], []])
         self.assertEqual(game.move_count, 1)
 
+    def test_redo_restores_undone_move(self) -> None:
+        game = HanoiGame(3)
+        game.move(0, 1)
+        game.move(0, 2)
+        game.undo()
+
+        self.assertTrue(game.redo())
+        self.assertEqual(game.pegs, [[3], [1], [2]])
+        self.assertEqual(game.move_count, 2)
+
+    def test_new_move_clears_redo_history(self) -> None:
+        game = HanoiGame(3)
+        game.move(0, 1)
+        game.undo()
+        game.move(0, 2)
+
+        self.assertFalse(game.redo())
+
     def test_completion_accepts_configured_target_pegs(self) -> None:
         game = HanoiGame(2, initial_peg=0, target_pegs=(1,))
 
@@ -111,6 +129,18 @@ class GameSessionTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             session.start_play(3, 1, (1, 2))
+
+    def test_session_exposes_redo_availability(self) -> None:
+        session = GameSession()
+        session.start_play(3, 0, (1, 2))
+        session.move(0, 1)
+
+        undone = session.undo()
+        self.assertTrue(undone["can_redo"])
+
+        redone = session.redo()
+        self.assertEqual(redone["message_key"], "redoSucceeded")
+        self.assertFalse(redone["can_redo"])
 
     def test_demo_mode_can_jump_to_any_step(self) -> None:
         session = GameSession()

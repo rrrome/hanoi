@@ -131,6 +131,7 @@ class HanoiGame:
     pegs: List[List[int]] = field(default_factory=list)
     move_count: int = 0
     history: List[Move] = field(default_factory=list)
+    redo_history: List[Move] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.reset(self.disk_count, self.initial_peg, self.target_pegs)
@@ -157,6 +158,7 @@ class HanoiGame:
         self.pegs[self.initial_peg] = list(range(self.disk_count, 0, -1))
         self.move_count = 0
         self.history = []
+        self.redo_history = []
 
     def load_state(self, pegs: Sequence[Sequence[int]], target_pegs: Iterable[int]) -> None:
         disk_count = sum(len(peg) for peg in pegs)
@@ -166,6 +168,7 @@ class HanoiGame:
         self.initial_peg = self._infer_initial_peg()
         self.move_count = 0
         self.history = []
+        self.redo_history = []
 
     def move(self, source: int, target: int) -> bool:
         validate_peg(source)
@@ -181,6 +184,7 @@ class HanoiGame:
         self.pegs[source].pop()
         self.pegs[target].append(disk)
         self.history.append((source, target, disk))
+        self.redo_history = []
         self.move_count += 1
         return True
 
@@ -219,7 +223,24 @@ class HanoiGame:
 
         self.pegs[target].pop()
         self.pegs[source].append(disk)
+        self.redo_history.append((source, target, disk))
         self.move_count = max(0, self.move_count - 1)
+        return True
+
+    def redo(self) -> bool:
+        if not self.redo_history:
+            return False
+
+        source, target, disk = self.redo_history.pop()
+        if not self.pegs[source] or self.pegs[source][-1] != disk:
+            raise RuntimeError("Game redo history is inconsistent with the current board.")
+        if self.pegs[target] and self.pegs[target][-1] < disk:
+            raise RuntimeError("Game redo history contains an invalid move.")
+
+        self.pegs[source].pop()
+        self.pegs[target].append(disk)
+        self.history.append((source, target, disk))
+        self.move_count += 1
         return True
 
     @property

@@ -60,7 +60,8 @@ const translations = {
     themeDarkOption: "深色",
     themeGenshinOption: "原神",
     themeToggleLabel: "选择主题",
-    undoButton: "撤回上一步",
+    undoButton: "上一步",
+    redoButton: "下一步",
     playAgainButton: "再来一局",
     confirmSetupButton: "确认残局",
     previousButton: "上一步",
@@ -100,6 +101,7 @@ const translations = {
     defaultSetupStatus: "拖动任意盘子到任意柱子，确认后开始破解。",
     manualMoveBlocked: "当前模式不能手动移动盘子",
     undoBlocked: "当前模式不能撤回手动移动",
+    redoBlocked: "当前模式不能返回下一步",
     selectNonEmptyPeg: "请选择有盘子的柱子",
     selectedPeg: "已选择第 {peg} 根柱子",
     setupInvalidMove: "无效摆放：大盘子不能放在小盘子上。",
@@ -116,6 +118,8 @@ const translations = {
     moveSucceeded: "移动成功",
     nothingToUndo: "没有可撤回的步骤",
     undoSucceeded: "已撤回上一步",
+    nothingToRedo: "没有可返回的步骤",
+    redoSucceeded: "已返回下一步",
     demoStarted: "教学演示已开启，共 {total} 步",
     notInGuide: "当前不在步骤演示模式",
     alreadyLastStep: "已经是最后一步",
@@ -145,7 +149,8 @@ const translations = {
     themeDarkOption: "Dark",
     themeGenshinOption: "Genshin",
     themeToggleLabel: "Choose theme",
-    undoButton: "Undo Move",
+    undoButton: "Previous",
+    redoButton: "Next",
     playAgainButton: "Play Again",
     confirmSetupButton: "Confirm State",
     previousButton: "Previous",
@@ -185,6 +190,7 @@ const translations = {
     defaultSetupStatus: "Drag any disk to any peg, then confirm the state to solve it.",
     manualMoveBlocked: "Manual moves are disabled in this mode.",
     undoBlocked: "Undo is disabled in this mode.",
+    redoBlocked: "Redo is disabled in this mode.",
     selectNonEmptyPeg: "Choose a peg that has disks.",
     selectedPeg: "Selected peg {peg}",
     setupInvalidMove: "Invalid placement: a larger disk cannot be placed on a smaller disk.",
@@ -201,6 +207,8 @@ const translations = {
     moveSucceeded: "Move successful",
     nothingToUndo: "No move to undo",
     undoSucceeded: "Last move undone",
+    nothingToRedo: "No move to redo",
+    redoSucceeded: "Next move restored",
     demoStarted: "Tutorial demo started with {total} steps.",
     notInGuide: "Step guide mode is not active.",
     alreadyLastStep: "Already at the last step",
@@ -229,6 +237,7 @@ const elements = {
   modeTitle: document.querySelector("#modeTitle"),
   modeSummary: document.querySelector("#modeSummary"),
   undoButton: document.querySelector("#undoButton"),
+  redoButton: document.querySelector("#redoButton"),
   confirmSetupButton: document.querySelector("#confirmSetupButton"),
   guideControls: document.querySelector("#guideControls"),
   previousButton: document.querySelector("#previousButton"),
@@ -310,6 +319,8 @@ async function runAction(action, payload = {}) {
       return moveSession(payload.source, payload.target);
     case "undo":
       return undoSession();
+    case "redo":
+      return redoSession();
     case "start-demo":
       return startDemoSession(payload.disk_count, payload.initial_peg, payload.target_peg);
     case "setup-solver":
@@ -351,6 +362,7 @@ function createGame(diskCount, initialPeg, targetPegs) {
     pegs: [],
     moveCount: 0,
     history: [],
+    redoHistory: [],
   };
   resetGame(game, diskCount, initialPeg, targetPegs);
   return game;
@@ -373,6 +385,8 @@ function sessionState(messageKey = "", messageArgs = {}) {
     target_peg: [DEMO_MODE, SETUP_MODE, SOLVER_MODE].includes(session.mode) ? session.guideTargetPeg : null,
     pegs: snapshotGame(session.game),
     move_count: session.game.moveCount,
+    can_undo: session.game.history.length > 0,
+    can_redo: session.game.redoHistory.length > 0,
     minimum_moves: getMinimumMoves(session.game.diskCount),
     elapsed_seconds: elapsedSeconds(),
     is_complete: isComplete(session.game),
@@ -436,6 +450,21 @@ function undoSession() {
   session.finished = false;
   session.finishedElapsedSeconds = null;
   return sessionState("undoSucceeded");
+}
+
+function redoSession() {
+  if (session.mode !== PLAY_MODE) {
+    return sessionState("redoBlocked");
+  }
+  if (!redoGame(session.game)) {
+    return sessionState("nothingToRedo");
+  }
+  if (isComplete(session.game)) {
+    session.finished = true;
+    session.finishedElapsedSeconds = elapsedSeconds();
+    return sessionState("completeOnPeg", { peg: getCompletionPeg(session.game) + 1 });
+  }
+  return sessionState("redoSucceeded");
 }
 
 function startDemoSession(diskCount, initialPeg, targetPeg) {
@@ -576,6 +605,7 @@ function resetGame(game, diskCount = game.diskCount, initialPeg = game.initialPe
   game.pegs[initial] = Array.from({ length: count }, (_item, index) => count - index);
   game.moveCount = 0;
   game.history = [];
+  game.redoHistory = [];
 }
 
 function loadGameState(game, pegs, targetPegs) {
@@ -586,6 +616,7 @@ function loadGameState(game, pegs, targetPegs) {
   game.initialPeg = inferInitialPeg(game);
   game.moveCount = 0;
   game.history = [];
+  game.redoHistory = [];
 }
 
 function moveTopDisk(game, source, target) {
@@ -604,6 +635,7 @@ function moveTopDisk(game, source, target) {
   game.pegs[sourcePeg].pop();
   targetStack.push(disk);
   game.history.push({ source: sourcePeg, target: targetPeg, disk });
+  game.redoHistory = [];
   game.moveCount += 1;
   return true;
 }
@@ -645,7 +677,28 @@ function undoGame(game) {
   }
   targetStack.pop();
   game.pegs[source].push(disk);
+  game.redoHistory.push({ source, target, disk });
   game.moveCount = Math.max(0, game.moveCount - 1);
+  return true;
+}
+
+function redoGame(game) {
+  if (!game.redoHistory.length) {
+    return false;
+  }
+  const { source, target, disk } = game.redoHistory.pop();
+  const sourceStack = game.pegs[source];
+  const targetStack = game.pegs[target];
+  if (!sourceStack.length || sourceStack[sourceStack.length - 1] !== disk) {
+    throw new Error("Game redo history is inconsistent with the current board.");
+  }
+  if (targetStack.length && targetStack[targetStack.length - 1] < disk) {
+    throw new Error("Game redo history contains an invalid move.");
+  }
+  sourceStack.pop();
+  targetStack.push(disk);
+  game.history.push({ source, target, disk });
+  game.moveCount += 1;
   return true;
 }
 
@@ -814,10 +867,7 @@ function openConfig(kind) {
   configInitialPeg = 0;
   configTargetPegs = kind === "play" ? [1, 2] : [2];
 
-  const titleKey = kind === "play" ? "modePlay" : kind === "demo" ? "modeDemo" : "modeSolver";
-  const hintKey = kind === "play" ? "playConfigHint" : kind === "demo" ? "demoConfigHint" : "solverConfigHint";
-  elements.configTitle.textContent = t(titleKey);
-  elements.configHint.textContent = `${t(hintKey)} ${t(kind === "play" ? "playTargetHint" : "singleTargetHint")}`;
+  updateConfigText();
   renderPegButtons();
   elements.configModal.hidden = false;
   elements.modalDiskCount.focus();
@@ -919,6 +969,11 @@ function updateDiskCountLimit() {
 async function undoMove() {
   selectedPeg = null;
   setState(await runAction("undo"), { animateDrop: true });
+}
+
+async function redoMove() {
+  selectedPeg = null;
+  setState(await runAction("redo"), { animateDrop: true });
 }
 
 async function restartCurrentPlay() {
@@ -1055,6 +1110,9 @@ function renderState() {
   elements.modeSummary.textContent = getModeSummary();
   elements.undoButton.hidden = gameState.mode !== "play";
   elements.undoButton.textContent = gameState.is_complete ? t("playAgainButton") : t("undoButton");
+  elements.undoButton.disabled = !gameState.is_complete && !gameState.can_undo;
+  elements.redoButton.hidden = gameState.mode !== "play";
+  elements.redoButton.disabled = !gameState.can_redo || gameState.is_complete;
   elements.confirmSetupButton.hidden = gameState.mode !== "setup";
   elements.guideControls.hidden = !gameState.is_guide;
   elements.previousButton.disabled = !gameState.is_guide || gameState.guide_step <= 0;
@@ -1183,8 +1241,10 @@ function selectTheme(theme) {
 
 function applyTheme() {
   document.documentElement.dataset.theme = getActiveTheme();
-  updateThemeButton();
-  updateDiskCountLimit();
+  applyLanguage();
+  if (gameState) {
+    renderState();
+  }
   scheduleDraw();
 }
 
@@ -1222,9 +1282,19 @@ function applyLanguage() {
     element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
   });
   elements.languageButton.textContent = t("languageButton");
+  elements.initialPegButtons.setAttribute("aria-label", t("initialPegLabel"));
+  elements.targetPegButtons.setAttribute("aria-label", t("targetPegLabel"));
   updateThemeButton();
   updateDiskCountLimit();
   renderPegButtons();
+  updateConfigText();
+}
+
+function updateConfigText() {
+  const titleKey = configKind === "play" ? "modePlay" : configKind === "demo" ? "modeDemo" : "modeSolver";
+  const hintKey = configKind === "play" ? "playConfigHint" : configKind === "demo" ? "demoConfigHint" : "solverConfigHint";
+  elements.configTitle.textContent = t(titleKey);
+  elements.configHint.textContent = `${t(hintKey)} ${t(configKind === "play" ? "playTargetHint" : "singleTargetHint")}`;
 }
 
 function renderPegButtons() {
@@ -1275,7 +1345,10 @@ function validateConfigSilently() {
 
 function t(key, args = {}) {
   const template = translations[currentLanguage][key] || translations.zh[key] || key;
-  return template.replace(/\{(\w+)\}/g, (_match, name) => {
+  const themedTemplate = getActiveTheme() === GENSHIN_THEME && currentLanguage === "zh"
+    ? template.replaceAll("盘子", "齿轮")
+    : template;
+  return themedTemplate.replace(/\{(\w+)\}/g, (_match, name) => {
     return Object.prototype.hasOwnProperty.call(args, name) ? String(args[name]) : "";
   });
 }
@@ -2525,6 +2598,11 @@ elements.undoButton.addEventListener("click", () => {
     elements.statusText.textContent = error.message;
   });
 });
+elements.redoButton.addEventListener("click", () => {
+  redoMove().catch((error) => {
+    elements.statusText.textContent = error.message;
+  });
+});
 elements.confirmSetupButton.addEventListener("click", () => {
   confirmSetup().catch((error) => {
     elements.statusText.textContent = error.message;
@@ -2558,10 +2636,10 @@ elements.canvas.addEventListener("pointerleave", () => {
 });
 elements.canvas.addEventListener("click", handleBoardClick);
 window.addEventListener("resize", resizeCanvas);
+window.visualViewport?.addEventListener("resize", resizeCanvas);
 
 setInterval(updateTimer, 250);
 applyTheme();
-applyLanguage();
 resizeCanvas();
 loadState().catch((error) => {
   elements.statusText.textContent = error.message;

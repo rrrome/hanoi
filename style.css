@@ -156,6 +156,7 @@ label {
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--text);
   background: var(--bg);
   font-family: "HYWenHei-65W", "Hanyi WenHei 65W", "汉仪文黑 65W", Arial, sans-serif;
@@ -464,9 +465,16 @@ input:focus-visible {
   display: none;
 }
 
-.modal {
+.modal-frame {
+  position: relative;
   width: min(480px, 100%);
   max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+}
+
+.modal {
+  width: 100%;
+  max-height: inherit;
   padding: 22px;
   overflow-y: auto;
   border-radius: 8px;
@@ -778,9 +786,11 @@ input:focus-visible {
   backdrop-filter: blur(4px);
 }
 
-:root[data-theme="genshin"] .modal {
-  position: relative;
+:root[data-theme="genshin"] .modal-frame {
   width: min(520px, 100%);
+}
+
+:root[data-theme="genshin"] .modal {
   padding: 30px 30px 26px;
   overflow-y: auto;
   border: 2px solid #c9ae70;
@@ -795,12 +805,12 @@ input:focus-visible {
     0 28px 90px rgba(31, 27, 33, 0.48);
 }
 
-:root[data-theme="genshin"] .modal::before,
-:root[data-theme="genshin"] .modal::after {
+:root[data-theme="genshin"] .modal-frame::before,
+:root[data-theme="genshin"] .modal-frame::after {
   content: "";
   position: absolute;
   left: 50%;
-  z-index: 0;
+  z-index: 2;
   width: 16px;
   height: 16px;
   border: 2px solid #c5a65d;
@@ -809,11 +819,11 @@ input:focus-visible {
   transform: translateX(-50%) rotate(45deg);
 }
 
-:root[data-theme="genshin"] .modal::before {
+:root[data-theme="genshin"] .modal-frame::before {
   top: -10px;
 }
 
-:root[data-theme="genshin"] .modal::after {
+:root[data-theme="genshin"] .modal-frame::after {
   bottom: -10px;
 }
 
@@ -958,5 +968,200 @@ input:focus-visible {
     width: 4px;
     height: 4px;
     margin-right: 5px;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse) {
+  .app-shell {
+    width: 100%;
+    margin: 0;
+    padding-top: max(6px, env(safe-area-inset-top));
+    padding-right: max(10px, env(safe-area-inset-right));
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+    padding-left: max(10px, env(safe-area-inset-left));
+  }
+
+  .topbar,
+  .modebar {
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .brand-row {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  h1 {
+    font-size: 23px;
+  }
+
+  h2 {
+    font-size: 17px;
+  }
+
+  #statusText,
+  #modeSummary {
+    max-width: 54vw;
+    min-height: 15px;
+    margin-top: 2px;
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  button {
+    height: 34px;
+    padding: 0 11px;
+    font-size: 13px;
+  }
+
+  .theme-button {
+    min-width: 64px;
+  }
+
+  .mode-actions,
+  .guide-controls {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  #guideProgress {
+    min-width: 66px;
+    font-size: 14px;
+  }
+
+  .home-view {
+    min-height: calc(100dvh - 54px);
+  }
+
+  .home-actions,
+  :root[data-theme="genshin"] .home-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: min(720px, 92vw);
+    padding: 16px;
+  }
+
+  .home-actions button {
+    height: 44px;
+    padding: 0 8px;
+    font-size: 14px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .stats > div {
+    padding: 5px 10px;
+  }
+
+  .stats span {
+    font-size: 11px;
+  }
+
+  .stats strong {
+    margin-top: 1px;
+    font-size: 17px;
+  }
+
+  .board-panel {
+    min-height: 0;
+  }
+
+  #board {
+    height: clamp(200px, calc(100dvh - 168px), 330px);
+    min-height: 180px;
+  }
+
+  #gameView:has(#guideSliderPanel:not([hidden])) #board {
+    height: clamp(170px, calc(100dvh - 210px), 290px);
+  }
+
+  .guide-slider-panel {
+    grid-template-columns: auto minmax(120px, 1fr) auto;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .modal-backdrop {
+    padding-top: max(6px, env(safe-area-inset-top));
+    padding-right: max(8px, env(safe-area-inset-right));
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+    padding-left: max(8px, env(safe-area-inset-left));
+  }
+
+  .modal-frame,
+  :root[data-theme="genshin"] .modal-frame {
+    width: min(720px, 100%);
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .modal,
+  :root[data-theme="genshin"] .modal {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    width: 100%;
+    max-height: inherit;
+    padding: 12px 16px;
+  }
+
+  .modal > h2,
+  .modal > #configHint,
+  .modal > .disk-count-field,
+  .modal > .form-error,
+  .modal > .modal-actions {
+    grid-column: 1 / -1;
+  }
+
+  .modal h2,
+  :root[data-theme="genshin"] .modal h2 {
+    margin-bottom: 3px;
+  }
+
+  #configHint,
+  .field small {
+    font-size: 11px;
+  }
+
+  .field,
+  :root[data-theme="genshin"] .field {
+    gap: 4px;
+    margin-top: 6px;
+    padding: 6px 8px;
+  }
+
+  .field input[type="range"] {
+    margin: 6px 0 3px;
+  }
+
+  .peg-choice {
+    height: 36px;
+  }
+
+  .form-error {
+    min-height: 14px;
+    margin-top: 4px;
+    font-size: 11px;
+  }
+
+  .modal-actions {
+    margin-top: 4px;
+  }
+
+  :root[data-theme="genshin"] button::before {
+    width: 4px;
+    height: 4px;
+    margin-right: 6px;
   }
 }

@@ -51,6 +51,8 @@ class HanoiRequestHandler(BaseHTTPRequestHandler):
                 self._send_json(session.move(int(payload["source"]), int(payload["target"])))
             elif path == "/api/undo":
                 self._send_json(session.undo())
+            elif path == "/api/redo":
+                self._send_json(session.redo())
             elif path == "/api/demo/start":
                 self._send_json(
                     session.start_demo(
