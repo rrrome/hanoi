@@ -238,6 +238,7 @@ input:focus-visible {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 10px;
 }
 
 .theme-picker {
@@ -317,6 +318,13 @@ input:focus-visible {
   font-size: 18px;
   font-weight: 700;
   text-align: center;
+}
+
+#previousButton,
+#nextButton {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .stats {

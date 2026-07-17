@@ -18,6 +18,9 @@ const THEME_OPTIONS = ["light", "dark", GENSHIN_THEME];
 const COMPACT_LANDSCAPE_MEDIA_QUERY = "(orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse)";
 const STANDARD_BOARD_TOP_PADDING = 8;
 const STANDARD_DISK_MIN_HEIGHT = 10;
+const GUIDE_HOLD_START_DELAY = 400;
+const GUIDE_HOLD_REPEAT_DELAY = 80;
+const GUIDE_HOLD_CLICK_SUPPRESSION_DELAY = 600;
 
 const diskGradientStops = [
   "#f07a44",
@@ -86,6 +89,9 @@ let syncedElapsed = 0;
 let lastSyncTime = performance.now();
 let guideJumpInFlight = false;
 let pendingGuideStep = null;
+let guideHoldState = null;
+let suppressedGuideClickButton = null;
+let suppressedGuideClickTimer = null;
 let diskRects = [];
 let dragState = null;
 let configInitialPeg = 0;
@@ -285,6 +291,116 @@ async function showPreviousStep() {
 async function showNextStep() {
   selectedPeg = null;
   setState(await runAction("guide-next"), { animateDrop: true });
+}
+
+function bindGuideStepButton(button, direction) {
+  button.addEventListener("pointerdown", (event) => startGuideButtonHold(event, direction));
+  button.addEventListener("pointerup", stopGuideButtonHold);
+  button.addEventListener("pointercancel", stopGuideButtonHold);
+  button.addEventListener("lostpointercapture", stopGuideButtonHold);
+  button.addEventListener("contextmenu", (event) => event.preventDefault());
+  button.addEventListener("click", (event) => handleGuideButtonClick(event, direction));
+}
+
+function startGuideButtonHold(event, direction) {
+  if (
+    !gameState?.is_guide
+    || event.currentTarget.disabled
+    || (event.pointerType === "mouse" && event.button !== 0)
+  ) {
+    return;
+  }
+
+  clearGuideButtonHold();
+  const button = event.currentTarget;
+  guideHoldState = {
+    button,
+    direction,
+    pointerId: event.pointerId,
+    startedAt: performance.now(),
+    targetStep: clampGuideStep(elements.guideStepSlider.value),
+    repeated: false,
+    timer: null,
+  };
+  button.setPointerCapture?.(event.pointerId);
+  guideHoldState.timer = window.setTimeout(
+    () => repeatGuideButtonStep(guideHoldState),
+    GUIDE_HOLD_START_DELAY,
+  );
+}
+
+function repeatGuideButtonStep(holdState) {
+  if (guideHoldState !== holdState || !gameState?.is_guide) {
+    return;
+  }
+
+  holdState.repeated = true;
+  const elapsed = performance.now() - holdState.startedAt;
+  const stepSize = getGuideHoldStepSize(elapsed);
+  const nextStep = clampGuideStep(holdState.targetStep + holdState.direction * stepSize);
+  if (nextStep === holdState.targetStep) {
+    return;
+  }
+
+  holdState.targetStep = nextStep;
+  jumpGuideStep(nextStep).catch((error) => {
+    elements.statusText.textContent = error.message;
+    clearGuideButtonHold();
+  });
+  holdState.timer = window.setTimeout(
+    () => repeatGuideButtonStep(holdState),
+    GUIDE_HOLD_REPEAT_DELAY,
+  );
+}
+
+function getGuideHoldStepSize(elapsed) {
+  if (elapsed >= 5000) return 10;
+  if (elapsed >= 3000) return 5;
+  if (elapsed >= 1500) return 2;
+  return 1;
+}
+
+function stopGuideButtonHold(event) {
+  const holdState = guideHoldState;
+  if (!holdState || (event?.pointerId !== undefined && event.pointerId !== holdState.pointerId)) {
+    return;
+  }
+
+  clearGuideButtonHold();
+  if (holdState.repeated && event?.type === "pointerup") {
+    suppressNextGuideButtonClick(holdState.button);
+  }
+}
+
+function clearGuideButtonHold() {
+  if (guideHoldState?.timer !== null) {
+    window.clearTimeout(guideHoldState.timer);
+  }
+  guideHoldState = null;
+}
+
+function suppressNextGuideButtonClick(button) {
+  suppressedGuideClickButton = button;
+  window.clearTimeout(suppressedGuideClickTimer);
+  suppressedGuideClickTimer = window.setTimeout(() => {
+    if (suppressedGuideClickButton === button) {
+      suppressedGuideClickButton = null;
+    }
+  }, GUIDE_HOLD_CLICK_SUPPRESSION_DELAY);
+}
+
+function handleGuideButtonClick(event, direction) {
+  if (suppressedGuideClickButton === event.currentTarget) {
+    window.clearTimeout(suppressedGuideClickTimer);
+    suppressedGuideClickButton = null;
+    event.preventDefault();
+    return;
+  }
+
+  const action = direction < 0 ? showPreviousStep : showNextStep;
+  action().catch((error) => {
+    elements.statusText.textContent = error.message;
+  });
 }
 
 async function jumpGuideStep(step) {
@@ -1191,16 +1307,8 @@ elements.confirmSetupButton.addEventListener("click", () => {
     elements.statusText.textContent = error.message;
   });
 });
-elements.previousButton.addEventListener("click", () => {
-  showPreviousStep().catch((error) => {
-    elements.statusText.textContent = error.message;
-  });
-});
-elements.nextButton.addEventListener("click", () => {
-  showNextStep().catch((error) => {
-    elements.statusText.textContent = error.message;
-  });
-});
+bindGuideStepButton(elements.previousButton, -1);
+bindGuideStepButton(elements.nextButton, 1);
 elements.guideStepSlider.addEventListener("input", (event) => {
   jumpGuideStep(event.target.value).catch((error) => {
     elements.statusText.textContent = error.message;
