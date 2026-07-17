@@ -838,7 +838,10 @@ input:focus-visible {
       var(--standard-board-height, 330px),
       clamp(200px, calc(100dvh - 168px), 330px)
     );
-    min-height: 180px;
+    min-height: max(
+      180px,
+      var(--standard-board-content-min-height, 180px)
+    );
   }
 
   #gameView:has(#guideSliderPanel:not([hidden])) #board {

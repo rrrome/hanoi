@@ -527,8 +527,15 @@ function updateStandardBoardHeight() {
   const contentHeight = STANDARD_BOARD_TOP_SPACE
     + levelCount * STANDARD_DISK_MAX_HEIGHT
     + STANDARD_BOARD_BOTTOM_SPACE;
+  const minimumContentHeight = STANDARD_BOARD_TOP_SPACE
+    + levelCount * STANDARD_DISK_MIN_HEIGHT
+    + STANDARD_BOARD_BOTTOM_SPACE;
   const boardHeight = Math.max(STANDARD_BOARD_MIN_HEIGHT, contentHeight);
   elements.gameView.style.setProperty("--standard-board-height", `${boardHeight}px`);
+  elements.gameView.style.setProperty(
+    "--standard-board-content-min-height",
+    `${minimumContentHeight}px`,
+  );
 }
 
 function loadLanguage() {
@@ -827,7 +834,10 @@ function drawStandardBoard(width, height, colors) {
 function getStandardDiskHeight(baseY, pegTopY, diskCount) {
   // 优先保持正常厚度；空间不足时压缩，但始终为顶部预留安全区。
   const preferredHeight = (baseY - pegTopY - 16) / diskCount;
-  const maximumFittingHeight = (baseY - STANDARD_BOARD_TOP_PADDING) / diskCount;
+  const maximumFittingHeight = getActiveTheme() === GENSHIN_THEME
+    ? (baseY - STANDARD_BOARD_TOP_PADDING) / diskCount
+    : (baseY - STANDARD_BOARD_TOP_SPACE)
+      / (diskCount + STANDARD_PEG_CLEARANCE_LEVELS);
   return Math.min(
     STANDARD_DISK_MAX_HEIGHT,
     Math.max(STANDARD_DISK_MIN_HEIGHT, preferredHeight),
@@ -1276,8 +1286,8 @@ elements.canvas.addEventListener("pointerleave", () => {
   setHoveredPeg(null);
 });
 elements.canvas.addEventListener("click", handleBoardClick);
-window.addEventListener("resize", resizeCanvas);
-window.visualViewport?.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize", scheduleDraw);
+window.visualViewport?.addEventListener("resize", scheduleDraw);
 
 setInterval(updateTimer, 250);
 installPullToRefreshGuard();
