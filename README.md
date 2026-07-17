@@ -20,19 +20,19 @@
 
 ### 主页
 
-![堆栈塔主页](Demo.png)
+![堆栈塔主页](demo/Demo.png)
 
 原神风格主页集中展示三种游戏入口，并可快速切换语言与主题。
 
 ### 新游戏
 
-![堆栈塔新游戏模式](Demo_newgame.png)
+![堆栈塔新游戏模式](demo/Demo_newgame.png)
 
 新游戏支持 2 至 10 个齿轮，并实时记录当前步数、用时和理论最少步数。
 
 ### 教学演示
 
-![堆栈塔教学演示模式](Demo_tutor.png)
+![堆栈塔教学演示模式](demo/Demo_tutor.png)
 
 教学模式使用箭头标示每一步的移动方向，可通过上一步、下一步或进度滑块查看完整解法。
 
@@ -52,39 +52,44 @@
 
 ## 运行项目
 
-项目无需安装依赖。下载或克隆仓库后，直接用浏览器打开根目录中的 `index.html`：
+项目无需安装 npm 依赖或执行构建。由于前端使用 ES 模块，下载或克隆仓库后，请通过任意静态文件服务器运行：
 
 ```bash
 git clone https://github.com/rrrome/hanoi.git
 cd hanoi
-open index.html
+python3 -m http.server 8000
 ```
 
-Windows 用户可以双击 `index.html`，或使用任意本地静态文件服务器运行项目。
+然后访问 `http://localhost:8000`。Windows 用户可使用 `py -m http.server 8000`。
 
 ## 项目结构
 
 ```text
 .
-├── index.html              # 页面结构
-├── style.css               # 界面、主题与动画样式
-├── app.js                  # 游戏规则、交互与求解逻辑
-├── genshin_theme/          # 原神主题图片与界面素材
-├── Demo.png                # 主页演示图
-├── Demo_newgame.png        # 新游戏演示图
-├── Demo_tutor.png          # 教学模式演示图
-├── ASSETS_NOTICE.md        # 第三方与衍生素材版权声明
-└── python_reference/       # 早期 Python 版本，仅供参考学习
+├── index.html                 # 页面结构与模块入口
+├── style.css                  # 基础主题、布局与响应式样式
+├── genshin-theme.css          # 原神主题界面样式
+├── js/
+│   ├── app.js                 # 页面状态、交互与标准主题绘制
+│   ├── game-engine.js         # 游戏规则、历史记录与求解逻辑
+│   ├── genshin-theme.js       # 原神素材、齿轮、箭头与特效渲染
+│   └── i18n.js                # 中英文界面文案
+├── genshin_theme/             # 原神主题图片与界面素材
+├── demo/                      # README 演示图片
+├── ASSETS_NOTICE.md           # 第三方与衍生素材版权声明
+└── python_reference/          # 早期 Python 版本，仅供参考学习
 ```
 
-当前网页只依赖 `index.html`、`style.css`、`app.js` 和相关静态素材，不会调用 `python_reference/` 中的代码。
+`game-engine.js` 不依赖 DOM，负责规则与状态；`app.js` 只协调页面和标准主题 Canvas；`genshin-theme.js` 通过回调读取状态并独立管理素材、齿轮尺寸与特效。新增文案统一放入 `i18n.js`。
+
+当前网页只依赖根目录样式、`js/` 模块和相关静态素材，不会调用 `python_reference/` 中的代码。
 
 ## 检查
 
 检查 JavaScript 语法：
 
 ```bash
-node --check app.js
+for file in js/*.js; do node --check "$file"; done
 ```
 
 运行参考 Python 版本的测试：

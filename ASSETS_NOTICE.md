@@ -8,12 +8,12 @@ This file explains the copyright and licensing boundaries for non-code assets in
 本声明适用于以下文件及目录：
 
 - `genshin_theme/` 中的全部主题图片与界面素材；
-- `Demo.png`、`Demo_newgame.png` 和 `Demo_tutor.png` 中展示的相关主题内容。
+- `demo/` 中三张演示图片展示的相关主题内容。
 
 This notice applies to:
 
 - all theme images and interface assets in `genshin_theme/`;
-- related themed content shown in `Demo.png`, `Demo_newgame.png`, and `Demo_tutor.png`.
+- related themed content shown in the three screenshots under `demo/`.
 
 ## 原创源代码 / Original Source Code
 

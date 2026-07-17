@@ -6,6 +6,7 @@ The active app is the static browser version in the repository root:
 
 - `../index.html`
 - `../style.css`
-- `../app.js`
+- `../genshin-theme.css`
+- `../js/`
 
 The static app does not import, request, or depend on any file in this directory.

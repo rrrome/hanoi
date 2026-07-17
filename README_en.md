@@ -20,19 +20,19 @@ Stack Tower is a static browser puzzle game based on the classic Tower of Hanoi 
 
 ### Home Page
 
-![Stack Tower home page](Demo.png)
+![Stack Tower home page](demo/Demo.png)
 
 The Genshin-inspired home page provides quick access to all three game modes, language settings, and theme controls.
 
 ### New Game
 
-![Stack Tower new game mode](Demo_newgame.png)
+![Stack Tower new game mode](demo/Demo_newgame.png)
 
 New Game supports 2 to 10 gears and displays the current move count, elapsed time, and theoretical minimum moves in real time.
 
 ### Tutorial Demo
 
-![Stack Tower tutorial mode](Demo_tutor.png)
+![Stack Tower tutorial mode](demo/Demo_tutor.png)
 
 Tutorial mode uses arrows to show each move and lets players browse the full solution with previous/next controls or the progress slider.
 
@@ -52,39 +52,44 @@ Arrange the gears into any legal endgame position, then let the solver calculate
 
 ## Running Locally
 
-No dependencies are required. Download or clone the repository, then open `index.html` in a browser:
+No npm dependencies or build step are required. Because the frontend uses ES modules, run the repository through any static file server:
 
 ```bash
 git clone https://github.com/rrrome/hanoi.git
 cd hanoi
-open index.html
+python3 -m http.server 8000
 ```
 
-On Windows, double-click `index.html` or serve the directory with any local static file server.
+Then visit `http://localhost:8000`. On Windows, use `py -m http.server 8000`.
 
 ## Project Structure
 
 ```text
 .
-├── index.html              # Page structure
-├── style.css               # Interface, themes, and animations
-├── app.js                  # Game rules, interactions, and solver
-├── genshin_theme/          # Genshin-inspired images and interface assets
-├── Demo.png                # Home page screenshot
-├── Demo_newgame.png        # New Game screenshot
-├── Demo_tutor.png          # Tutorial screenshot
-├── ASSETS_NOTICE.md        # Third-party and derivative asset notice
-└── python_reference/       # Earlier Python version for reference only
+├── index.html                 # Page structure and module entry
+├── style.css                  # Base themes, layout, and responsive styles
+├── genshin-theme.css          # Genshin theme interface styles
+├── js/
+│   ├── app.js                 # UI state, interactions, and standard rendering
+│   ├── game-engine.js         # Rules, history, and solver logic
+│   ├── genshin-theme.js       # Genshin assets, gears, arrows, and effects
+│   └── i18n.js                # Chinese and English interface text
+├── genshin_theme/             # Genshin-inspired images and interface assets
+├── demo/                      # README screenshots
+├── ASSETS_NOTICE.md           # Third-party and derivative asset notice
+└── python_reference/          # Earlier Python version for reference only
 ```
 
-The current web application only uses `index.html`, `style.css`, `app.js`, and its static assets. It does not execute or depend on code in `python_reference/`.
+`game-engine.js` owns rules and state without depending on the DOM. `app.js` coordinates the page and standard Canvas renderer, while `genshin-theme.js` reads state through callbacks and manages its own assets, gear sizing, and effects. Add interface text in `i18n.js`.
+
+The web application only uses the root stylesheets, modules in `js/`, and its static assets. It does not execute or depend on code in `python_reference/`.
 
 ## Validation
 
 Check the JavaScript syntax:
 
 ```bash
-node --check app.js
+for file in js/*.js; do node --check "$file"; done
 ```
 
 Run the tests for the reference Python version:

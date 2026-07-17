@@ -1,3 +1,4 @@
+/* 基础主题变量：浅色、深色以及 Canvas 共用颜色。 */
 :root {
   color-scheme: light;
   --bg: #f3f5f9;
@@ -64,40 +65,6 @@
   --guide-arrow-accent: #e8f8ff;
 }
 
-:root[data-theme="genshin"] {
-  color-scheme: light;
-  --genshin-surface-opacity: 0.85;
-  --genshin-button-radius: 999px;
-  --bg: #a76f55;
-  --panel: rgba(246, 242, 229, 0.96);
-  --text: #3f485a;
-  --muted: #70798a;
-  --border: #c8ae78;
-  --accent: #536580;
-  --accent-dark: #3f506b;
-  --danger: #b13f35;
-  --target: #38a36a;
-  --on-accent: #faf6e9;
-  --secondary-bg: rgba(248, 245, 234, 0.96);
-  --input-bg: rgba(252, 249, 239, 0.96);
-  --choice-hover-bg: #eee6d1;
-  --focus-ring: rgba(214, 181, 102, 0.5);
-  --backdrop: rgba(71, 38, 20, 0.44);
-  --shadow: rgba(69, 37, 20, 0.34);
-  --board-bg-start: #f6d492;
-  --board-bg-end: #b87854;
-  --board-grid: rgba(117, 70, 42, 0.12);
-  --board-base: #8e5630;
-  --peg: #9b613f;
-  --peg-label: #6d442d;
-  --target-label: #216947;
-  --disk-label: #5a381d;
-  --disk-shadow: rgba(82, 45, 24, 0.24);
-  --disk-shadow-lifted: rgba(82, 45, 24, 0.4);
-  --guide-arrow-fill: #f5a13d;
-  --guide-arrow-stroke: #b54b24;
-  --guide-arrow-accent: #ffe3a1;
-}
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -134,6 +101,7 @@
   }
 }
 
+/* 全局重置与触摸行为。 */
 * {
   box-sizing: border-box;
 }
@@ -162,54 +130,17 @@ body {
   font-family: "HYWenHei-65W", "Hanyi WenHei 65W", "汉仪文黑 65W", Arial, sans-serif;
 }
 
-:root[data-theme="genshin"] body {
-  position: relative;
-  isolation: isolate;
-  background-color: #19242d;
-}
 
-:root[data-theme="genshin"] body::before {
-  content: "";
-  position: fixed;
-  inset: -24px;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(10, 23, 33, 0.42), rgba(8, 17, 25, 0.58)),
-    url("genshin_theme/homepage.webp");
-  background-position: center;
-  background-size: cover;
-  filter: blur(12px) brightness(0.62) saturate(0.82);
-  transform: scale(1.03);
-}
 
-:root[data-theme="genshin"] body.is-home::before {
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(19, 39, 54, 0.12), rgba(16, 30, 39, 0.2)),
-    url("genshin_theme/homepage.webp");
-  filter: none;
-  transform: none;
-}
 
-:root[data-theme="genshin"] .topbar,
-:root[data-theme="genshin"] .modebar {
-  color: #e2e6eb;
-  text-shadow: 0 2px 8px rgba(12, 28, 40, 0.72);
-}
 
-:root[data-theme="genshin"] #statusText,
-:root[data-theme="genshin"] #modeSummary,
-:root[data-theme="genshin"] #guideProgress {
-  color: rgba(226, 230, 235, 0.9);
-  text-shadow: 0 2px 7px rgba(12, 28, 40, 0.72);
-}
 
 button,
 input {
   font: inherit;
 }
 
+/* 页面骨架与顶部导航。 */
 .app-shell {
   width: min(1180px, calc(100vw - 32px));
   margin: 0 auto;
@@ -345,6 +276,7 @@ input:focus-visible {
   color: var(--on-accent);
 }
 
+/* 首页、统计卡片与棋盘区域。 */
 .home-view {
   display: grid;
   min-height: 62vh;
@@ -452,6 +384,7 @@ input:focus-visible {
   accent-color: var(--accent);
 }
 
+/* 新游戏配置弹窗与表单控件。 */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -633,297 +566,40 @@ input:focus-visible {
   margin-top: 16px;
 }
 
-:root[data-theme="genshin"] button {
-  position: relative;
-  border: 1px solid #cdb57d;
-  border-radius: var(--genshin-button-radius);
-  background: linear-gradient(
-    180deg,
-    rgba(101, 117, 144, var(--genshin-surface-opacity)) 0%,
-    rgba(82, 99, 126, var(--genshin-surface-opacity)) 52%,
-    rgba(70, 87, 115, var(--genshin-surface-opacity)) 100%
-  );
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 250, 226, 0.28),
-    inset 0 -3px 0 rgba(39, 52, 74, 0.22),
-    0 3px 8px rgba(49, 39, 31, 0.24);
-  color: #fbf7e9;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-shadow: 0 1px 1px rgba(30, 39, 56, 0.36);
-  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
-}
 
-:root[data-theme="genshin"] button::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 10px;
-  border: 1px solid rgba(255, 246, 207, 0.88);
-  background: #d7bd7b;
-  box-shadow: 0 0 0 1px rgba(67, 79, 101, 0.3);
-  transform: rotate(45deg) translateY(-1px);
-}
 
-:root[data-theme="genshin"] button:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(113, 130, 158, var(--genshin-surface-opacity)) 0%,
-    rgba(90, 108, 137, var(--genshin-surface-opacity)) 52%,
-    rgba(75, 93, 121, var(--genshin-surface-opacity)) 100%
-  );
-  filter: brightness(1.04);
-  transform: translateY(-1px);
-}
 
-:root[data-theme="genshin"] button:active {
-  transform: translateY(1px);
-}
 
-:root[data-theme="genshin"] button:disabled {
-  filter: saturate(0.45);
-  transform: none;
-}
 
-:root[data-theme="genshin"] .secondary-button,
-:root[data-theme="genshin"] .peg-choice,
-:root[data-theme="genshin"] .theme-menu button {
-  border-color: #c8b17a;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 253, 245, var(--genshin-surface-opacity)),
-    rgba(232, 225, 207, var(--genshin-surface-opacity))
-  );
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
-    inset 0 -2px 0 rgba(150, 129, 88, 0.14),
-    0 2px 6px rgba(65, 48, 36, 0.16);
-  color: #566075;
-  text-shadow: none;
-}
 
-:root[data-theme="genshin"] .secondary-button:hover,
-:root[data-theme="genshin"] .peg-choice:hover,
-:root[data-theme="genshin"] .theme-menu button:hover,
-:root[data-theme="genshin"] .theme-menu button[aria-checked="true"] {
-  border-color: #d8bd76;
-  background: linear-gradient(
-    180deg,
-    rgba(104, 121, 149, var(--genshin-surface-opacity)),
-    rgba(77, 95, 124, var(--genshin-surface-opacity))
-  );
-  color: #fff9e9;
-}
 
-:root[data-theme="genshin"] .peg-choice.is-selected {
-  border-color: #dec57f;
-  background: linear-gradient(
-    180deg,
-    rgba(102, 119, 147, var(--genshin-surface-opacity)),
-    rgba(74, 92, 120, var(--genshin-surface-opacity))
-  );
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 249, 222, 0.38),
-    0 0 0 2px rgba(205, 178, 111, 0.25),
-    0 4px 10px rgba(50, 57, 75, 0.24);
-  color: #fff9e9;
-}
 
-:root[data-theme="genshin"] .theme-menu,
-:root[data-theme="genshin"] .stats > div,
-:root[data-theme="genshin"] .guide-slider-panel,
-:root[data-theme="genshin"] .board-panel {
-  border: 1px solid #cbb27b;
-  border-radius: 4px;
-  background: rgba(246, 242, 229, 0.94);
-  box-shadow:
-    inset 0 0 0 3px rgba(255, 253, 241, 0.52),
-    0 6px 18px rgba(73, 45, 31, 0.2);
-}
 
-:root[data-theme="genshin"] .theme-menu {
-  padding: 9px;
-  background: rgba(246, 242, 229, var(--genshin-surface-opacity));
-}
 
-:root[data-theme="genshin"] .home-actions {
-  position: relative;
-  width: min(360px, 100%);
-  padding: 26px;
-  border: 1px solid #c8ad72;
-  border-radius: 4px;
-  background:
-    linear-gradient(135deg, rgba(205, 179, 116, 0.11) 25%, transparent 25%) 0 0 / 18px 18px,
-    rgba(246, 242, 229, 0.94);
-  box-shadow:
-    inset 0 0 0 5px rgba(255, 253, 241, 0.6),
-    0 18px 48px rgba(65, 38, 27, 0.3);
-}
 
-:root[data-theme="genshin"] .home-actions::before,
-:root[data-theme="genshin"] .home-actions::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  width: 14px;
-  height: 14px;
-  border: 2px solid #d2b66f;
-  background: #f5efdc;
-  transform: translateX(-50%) rotate(45deg);
-}
 
-:root[data-theme="genshin"] .home-actions::before {
-  top: -8px;
-}
 
-:root[data-theme="genshin"] .home-actions::after {
-  bottom: -8px;
-}
 
-:root[data-theme="genshin"] .modal-backdrop {
-  background: rgba(42, 38, 43, 0.58);
-  backdrop-filter: blur(4px);
-}
 
-:root[data-theme="genshin"] .modal-frame {
-  width: min(520px, 100%);
-}
 
-:root[data-theme="genshin"] .modal {
-  padding: 30px 30px 26px;
-  overflow-y: auto;
-  border: 2px solid #c9ae70;
-  border-radius: 4px;
-  background:
-    linear-gradient(135deg, rgba(193, 165, 101, 0.1) 25%, transparent 25%) 0 0 / 22px 22px,
-    linear-gradient(315deg, rgba(193, 165, 101, 0.08) 25%, transparent 25%) 0 0 / 22px 22px,
-    rgba(245, 241, 229, var(--genshin-surface-opacity));
-  box-shadow:
-    inset 0 0 0 5px rgba(255, 253, 244, 0.8),
-    inset 0 0 0 6px rgba(181, 154, 96, 0.32),
-    0 28px 90px rgba(31, 27, 33, 0.48);
-}
 
-:root[data-theme="genshin"] .modal-frame::before,
-:root[data-theme="genshin"] .modal-frame::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  z-index: 2;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #c5a65d;
-  background: #f7f2e3;
-  box-shadow: 0 0 0 3px rgba(246, 242, 229, 0.78);
-  transform: translateX(-50%) rotate(45deg);
-}
 
-:root[data-theme="genshin"] .modal-frame::before {
-  top: -10px;
-}
 
-:root[data-theme="genshin"] .modal-frame::after {
-  bottom: -10px;
-}
 
-:root[data-theme="genshin"] .modal > * {
-  position: relative;
-  z-index: 1;
-}
 
-:root[data-theme="genshin"] .modal h2 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 10px;
-  color: #465168;
-  letter-spacing: 0.12em;
-  text-align: center;
-}
 
-:root[data-theme="genshin"] .modal h2::before,
-:root[data-theme="genshin"] .modal h2::after {
-  content: "";
-  width: 68px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #b99a55);
-}
 
-:root[data-theme="genshin"] .modal h2::after {
-  background: linear-gradient(90deg, #b99a55, transparent);
-}
 
-:root[data-theme="genshin"] #configHint {
-  max-width: 420px;
-  margin: 0 auto 4px;
-  text-align: center;
-}
 
-:root[data-theme="genshin"] .field {
-  padding: 12px 14px;
-  border: 1px solid rgba(184, 158, 101, 0.48);
-  border-radius: 3px;
-  background: rgba(255, 253, 245, 0.56);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.36);
-}
 
-:root[data-theme="genshin"] #modalDiskCountValue {
-  min-width: 38px;
-  border-color: #bea361;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #61738e, #4c5d79);
-  box-shadow: inset 0 0 0 1px rgba(255, 250, 225, 0.3);
-  color: #fff8e5;
-}
 
-:root[data-theme="genshin"] .field input[type="range"] {
-  height: 6px;
-  border-color: #b99d5e;
-  background: linear-gradient(
-    to right,
-    #5b6d89 0,
-    #5b6d89 var(--range-progress),
-    #d8ccb0 var(--range-progress),
-    #d8ccb0 100%
-  );
-  box-shadow: 0 0 0 2px rgba(255, 253, 242, 0.72), 0 0 0 3px rgba(185, 157, 94, 0.25);
-}
 
-:root[data-theme="genshin"] .field input[type="range"]::-webkit-slider-runnable-track {
-  height: 6px;
-}
 
-:root[data-theme="genshin"] .field input[type="range"]::-webkit-slider-thumb {
-  width: 19px;
-  height: 19px;
-  margin-top: -7px;
-  border: 2px solid #f8f1da;
-  border-radius: 2px;
-  background: #caaa5e;
-  box-shadow: 0 0 0 1px #7e704f, 0 3px 8px rgba(54, 47, 43, 0.28);
-  transform: rotate(45deg);
-}
 
-:root[data-theme="genshin"] .field input[type="range"]::-moz-range-thumb {
-  width: 15px;
-  height: 15px;
-  border: 2px solid #f8f1da;
-  border-radius: 2px;
-  background: #caaa5e;
-  box-shadow: 0 0 0 1px #7e704f, 0 3px 8px rgba(54, 47, 43, 0.28);
-  transform: rotate(45deg);
-}
 
-:root[data-theme="genshin"] .range-limits {
-  color: #8a7c61;
-}
 
-:root[data-theme="genshin"] .form-error {
-  text-align: center;
-}
 
+/* 窄屏基础布局。 */
 @media (max-width: 760px) {
   .app-shell {
     width: min(100vw - 20px, 1180px);
@@ -971,6 +647,7 @@ input:focus-visible {
   }
 }
 
+/* 横屏手机紧凑布局；平板与桌面不会进入此断点。 */
 @media (orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse) {
   .app-shell {
     width: 100%;
