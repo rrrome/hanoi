@@ -584,11 +584,15 @@ export class GenshinThemeRenderer {
       !this.diskSizeCache
       || this.diskSizeCache.diskCount !== diskCount
       || this.diskSizeCache.layoutProfile !== layoutProfile
+      || this.diskSizeCache.minDiskWidth !== minDiskWidth
+      || this.diskSizeCache.maxDiskWidth !== maxDiskWidth
     ) {
       const widthStep = (maxDiskWidth - minDiskWidth) / Math.max(1, diskCount - 1);
       this.diskSizeCache = {
         diskCount,
         layoutProfile,
+        minDiskWidth,
+        maxDiskWidth,
         widths: Array.from({ length: diskCount }, (_item, index) => minDiskWidth + index * widthStep),
       };
     }

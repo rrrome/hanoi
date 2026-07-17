@@ -33,6 +33,7 @@ const diskGradientStops = [
 
 // DOM 引用集中维护，避免业务函数重复查询节点。
 const elements = {
+  appTitle: document.querySelector("#appTitle"),
   languageButton: document.querySelector("#languageButton"),
   themeButton: document.querySelector("#themeButton"),
   themeMenu: document.querySelector("#themeMenu"),
@@ -410,6 +411,7 @@ function renderState() {
   elements.gameView.hidden = isHome;
   elements.homeButton.hidden = isHome;
   elements.languageButton.hidden = !isHome;
+  elements.appTitle.hidden = !isHome;
   elements.statusText.textContent = getStatusText();
 
   if (isHome) {

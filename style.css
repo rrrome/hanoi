@@ -192,10 +192,18 @@ h2 {
   font-size: 15px;
 }
 
-#statusText,
 #modeSummary {
   min-height: 22px;
   margin-top: 8px;
+}
+
+#statusText {
+  min-width: 0;
+  min-height: 22px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 button {
@@ -236,9 +244,15 @@ input:focus-visible {
 
 .top-actions {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 10px;
+  min-width: 0;
+}
+
+.top-actions #statusText {
+  flex: 1 1 160px;
 }
 
 .theme-picker {
@@ -634,7 +648,6 @@ input:focus-visible {
   }
 
   .home-actions,
-  .stats,
   .guide-slider-panel {
     grid-template-columns: 1fr;
   }
@@ -685,6 +698,16 @@ input:focus-visible {
     margin-top: 2px;
     font-size: clamp(15px, 4.8vw, 20px);
     white-space: nowrap;
+  }
+
+  :root[data-theme="genshin"] .board-panel {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+
+  :root[data-theme="genshin"] #board {
+    height: 100%;
+    min-height: 0;
   }
 }
 
