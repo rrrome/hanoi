@@ -20,19 +20,19 @@ Stack Tower is a static browser puzzle game based on the classic Tower of Hanoi 
 
 ### Home Page
 
-![Stack Tower home page](demo/Demo.png)
+![Stack Tower home page](demo/demo_en.webp)
 
 The Genshin-inspired home page provides quick access to all three game modes, language settings, and theme controls.
 
 ### New Game
 
-![Stack Tower new game mode](demo/Demo_newgame.png)
+![Stack Tower new game mode](demo/demo_newgame_en.webp)
 
 New Game supports 2 to 10 gears and displays the current move count, elapsed time, and theoretical minimum moves in real time.
 
 ### Tutorial Demo
 
-![Stack Tower tutorial mode](demo/Demo_tutor.png)
+![Stack Tower tutorial mode](demo/demo_tutorial_en.webp)
 
 Tutorial mode uses arrows to show each move and lets players browse the full solution with previous/next controls or the progress slider.
 
