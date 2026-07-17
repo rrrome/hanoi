@@ -18,7 +18,11 @@ const THEME_STORAGE_KEY = "hanoi-theme";
 const THEME_OPTIONS = ["light", "dark", GENSHIN_THEME];
 const COMPACT_LANDSCAPE_MEDIA_QUERY = "(orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse)";
 const STANDARD_BOARD_TOP_PADDING = 8;
+const STANDARD_BOARD_TOP_SPACE = 40;
+const STANDARD_BOARD_BOTTOM_SPACE = 68;
+const STANDARD_BOARD_MIN_HEIGHT = 220;
 const STANDARD_DISK_MIN_HEIGHT = 10;
+const STANDARD_DISK_MAX_HEIGHT = 24;
 const STANDARD_PEG_CLEARANCE_LEVELS = 2;
 
 const diskGradientStops = [
@@ -419,6 +423,7 @@ function renderState() {
     return;
   }
 
+  updateStandardBoardHeight();
   elements.modeTitle.textContent = getModeTitle();
   elements.modeSummary.textContent = getModeSummary();
   elements.undoButton.hidden = gameState.mode !== "play";
@@ -515,6 +520,15 @@ function clampGuideStep(value) {
     return 0;
   }
   return Math.min(gameState.guide_total_steps, Math.max(0, parsed));
+}
+
+function updateStandardBoardHeight() {
+  const levelCount = gameState.disk_count + STANDARD_PEG_CLEARANCE_LEVELS;
+  const contentHeight = STANDARD_BOARD_TOP_SPACE
+    + levelCount * STANDARD_DISK_MAX_HEIGHT
+    + STANDARD_BOARD_BOTTOM_SPACE;
+  const boardHeight = Math.max(STANDARD_BOARD_MIN_HEIGHT, contentHeight);
+  elements.gameView.style.setProperty("--standard-board-height", `${boardHeight}px`);
 }
 
 function loadLanguage() {
@@ -739,7 +753,7 @@ function drawStandardBoard(width, height, colors) {
   drawBackground(width, height, colors);
 
   const centers = getPegCenters(width);
-  const baseY = height - 68;
+  const baseY = height - STANDARD_BOARD_BOTTOM_SPACE;
   const defaultPegTopY = 56;
   const diskHeight = getStandardDiskHeight(baseY, defaultPegTopY, gameState.disk_count);
   const pegTopY = getActiveTheme() !== GENSHIN_THEME
@@ -814,7 +828,11 @@ function getStandardDiskHeight(baseY, pegTopY, diskCount) {
   // 优先保持正常厚度；空间不足时压缩，但始终为顶部预留安全区。
   const preferredHeight = (baseY - pegTopY - 16) / diskCount;
   const maximumFittingHeight = (baseY - STANDARD_BOARD_TOP_PADDING) / diskCount;
-  return Math.min(24, Math.max(STANDARD_DISK_MIN_HEIGHT, preferredHeight), maximumFittingHeight);
+  return Math.min(
+    STANDARD_DISK_MAX_HEIGHT,
+    Math.max(STANDARD_DISK_MIN_HEIGHT, preferredHeight),
+    maximumFittingHeight,
+  );
 }
 
 function getDiskColor(disk) {
