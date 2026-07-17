@@ -7,11 +7,11 @@ import {
   getGuideMove,
   readLocalState,
   runAction,
-} from "./game-engine.js";
-import { GenshinThemeRenderer, GENSHIN_THEME } from "./genshin-theme.js";
-import { translations } from "./i18n.js";
-import { bindPressAndHold } from "./press-hold.js";
-import { installPullToRefreshGuard } from "./touch-guards.js";
+} from "./game-engine.js?v=20260717-2";
+import { GenshinThemeRenderer, GENSHIN_THEME } from "./genshin-theme.js?v=20260717-2";
+import { applyThemeTerminology, translations } from "./i18n.js?v=20260717-2";
+import { bindPressAndHold } from "./press-hold.js?v=20260717-2";
+import { installPullToRefreshGuard } from "./touch-guards.js?v=20260717-2";
 
 const LANGUAGE_STORAGE_KEY = "hanoi-language";
 const THEME_STORAGE_KEY = "hanoi-theme";
@@ -680,9 +680,11 @@ function validateConfigSilently() {
 
 function t(key, args = {}) {
   const template = translations[currentLanguage][key] || translations.zh[key] || key;
-  const themedTemplate = getActiveTheme() === GENSHIN_THEME && currentLanguage === "zh"
-    ? template.replaceAll("盘子", "齿轮")
-    : template;
+  const themedTemplate = applyThemeTerminology(
+    template,
+    currentLanguage,
+    getActiveTheme() === GENSHIN_THEME,
+  );
   return themedTemplate.replace(/\{(\w+)\}/g, (_match, name) => {
     return Object.prototype.hasOwnProperty.call(args, name) ? String(args[name]) : "";
   });
@@ -1213,6 +1215,11 @@ function handleBoardClick(event) {
   }
 
   const source = selectedPeg;
+  if (source === peg) {
+    setLocalStatus("destinationMatchesSource");
+    return;
+  }
+
   selectedPeg = null;
   hoveredPeg = null;
   draw();

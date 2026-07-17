@@ -70,6 +70,7 @@ export const translations = {
     solverStarted: "残局破解已开始，共 {total} 步",
     newGameStarted: "新游戏已开始",
     gameAlreadyComplete: "本局已完成，请开始新游戏",
+    destinationMatchesSource: "无法移动：目标柱与起始柱相同，请选择另一根柱子",
     invalidMove: "无效移动：大盘子不能放在小盘子上",
     completeOnPeg: "完成！已移到第 {peg} 根柱子",
     moveSucceeded: "移动成功",
@@ -159,6 +160,7 @@ export const translations = {
     solverStarted: "Endgame solver started with {total} steps.",
     newGameStarted: "New game started",
     gameAlreadyComplete: "This game is complete. Start a new game.",
+    destinationMatchesSource: "Move unavailable: the destination matches the source. Choose another peg.",
     invalidMove: "Invalid move: a larger disk cannot be placed on a smaller disk.",
     completeOnPeg: "Complete! All disks moved to peg {peg}.",
     moveSucceeded: "Move successful",
@@ -179,3 +181,25 @@ export const translations = {
     targetList: "Peg {targets}",
   },
 };
+
+// 原神主题使用齿轮造型，因此仅在该主题下替换界面中的盘子术语。
+export function applyThemeTerminology(template, language, useGenshinTerms) {
+  if (!useGenshinTerms) {
+    return template;
+  }
+  if (language === "zh") {
+    return template.replaceAll("盘子", "齿轮");
+  }
+  if (language !== "en") {
+    return template;
+  }
+  return template.replace(/\bdisks?\b/gi, (term) => {
+    const replacement = term.toLowerCase() === "disks" ? "gears" : "gear";
+    if (term === term.toUpperCase()) {
+      return replacement.toUpperCase();
+    }
+    return term[0] === term[0].toUpperCase()
+      ? `${replacement[0].toUpperCase()}${replacement.slice(1)}`
+      : replacement;
+  });
+}

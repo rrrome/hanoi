@@ -144,6 +144,9 @@ function moveSession(source, target) {
   if (session.finished) {
     return sessionState("gameAlreadyComplete");
   }
+  if (Number(source) === Number(target)) {
+    return sessionState("destinationMatchesSource");
+  }
   if (!moveTopDisk(session.game, source, target)) {
     return sessionState("invalidMove");
   }
