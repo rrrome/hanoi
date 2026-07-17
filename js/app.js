@@ -382,7 +382,7 @@ function renderState() {
   elements.undoButton.hidden = gameState.mode !== "play";
   elements.undoButton.textContent = gameState.is_complete ? t("playAgainButton") : t("undoButton");
   elements.undoButton.disabled = !gameState.is_complete && !gameState.can_undo;
-  elements.redoButton.hidden = gameState.mode !== "play";
+  elements.redoButton.hidden = gameState.mode !== "play" || gameState.is_complete;
   elements.redoButton.disabled = !gameState.can_redo || gameState.is_complete;
   elements.confirmSetupButton.hidden = gameState.mode !== "setup";
   elements.guideControls.hidden = !gameState.is_guide;

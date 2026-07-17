@@ -654,6 +654,31 @@ input:focus-visible {
   }
 }
 
+/* 手机竖屏下压缩统计卡片，保持三项数据横向排列。 */
+@media (orientation: portrait) and (max-width: 600px) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .stats > div {
+    padding: 10px 6px;
+  }
+
+  .stats span {
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .stats strong {
+    margin-top: 2px;
+    font-size: clamp(15px, 4.8vw, 20px);
+    white-space: nowrap;
+  }
+}
+
 /* 横屏手机紧凑布局；平板与桌面不会进入此断点。 */
 @media (orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse) {
   .app-shell {

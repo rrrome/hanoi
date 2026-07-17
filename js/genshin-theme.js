@@ -21,6 +21,7 @@ const GEAR_HOLE_BOUNDS = { x: 263, y: 105, width: 533, height: 223 };
 const GEAR_HOLE_CENTER_Y = GEAR_HOLE_BOUNDS.y + GEAR_HOLE_BOUNDS.height / 2;
 const COMPACT_MIN_GEAR_WIDTH = 34;
 const COMPACT_MIN_GEAR_WIDTH_RATIO = 0.34;
+const COMPACT_MIN_STACK_LEVELS = 5;
 
 const ASSET_URLS = {
   background: new URL("../genshin_theme/background.webp", import.meta.url).href,
@@ -420,9 +421,13 @@ export class GenshinThemeRenderer {
     const mapY = (y) => imageY + y * scale;
     const stackBaseY = mapY(GEAR_STACK_BASE_Y);
     const topLimitY = Math.max(34, mapY(348));
-    const diskStep = Math.max(12, Math.min(26, (stackBaseY - topLimitY) / Math.max(1, gameState.disk_count - 1)));
-    const responsiveMaxDiskWidth = Math.min(width * 0.22, scale * 350);
     const compactLandscape = this.usesCompactLayout();
+    // 少量齿轮不再占满整根柱子，避免手机端齿轮之间产生悬浮感。
+    const stackLevels = compactLandscape
+      ? Math.max(COMPACT_MIN_STACK_LEVELS, gameState.disk_count - 1)
+      : Math.max(1, gameState.disk_count - 1);
+    const diskStep = Math.max(12, Math.min(26, (stackBaseY - topLimitY) / stackLevels));
+    const responsiveMaxDiskWidth = Math.min(width * 0.22, scale * 350);
     const responsiveMinDiskWidth = compactLandscape
       ? Math.min(
         responsiveMaxDiskWidth,
