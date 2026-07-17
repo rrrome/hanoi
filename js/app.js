@@ -19,6 +19,7 @@ const THEME_OPTIONS = ["light", "dark", GENSHIN_THEME];
 const COMPACT_LANDSCAPE_MEDIA_QUERY = "(orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse)";
 const STANDARD_BOARD_TOP_PADDING = 8;
 const STANDARD_DISK_MIN_HEIGHT = 10;
+const STANDARD_PEG_CLEARANCE_LEVELS = 2;
 
 const diskGradientStops = [
   "#f07a44",
@@ -739,8 +740,14 @@ function drawStandardBoard(width, height, colors) {
 
   const centers = getPegCenters(width);
   const baseY = height - 68;
-  const pegTopY = 56;
-  const diskHeight = getStandardDiskHeight(baseY, pegTopY, gameState.disk_count);
+  const defaultPegTopY = 56;
+  const diskHeight = getStandardDiskHeight(baseY, defaultPegTopY, gameState.disk_count);
+  const pegTopY = getActiveTheme() !== GENSHIN_THEME
+    ? Math.max(
+      STANDARD_BOARD_TOP_PADDING,
+      baseY - (gameState.disk_count + STANDARD_PEG_CLEARANCE_LEVELS) * diskHeight,
+    )
+    : defaultPegTopY;
   const pegHeight = baseY - pegTopY;
 
   ctx.fillStyle = colors.base;
