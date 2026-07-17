@@ -117,6 +117,12 @@ label {
   touch-action: manipulation;
 }
 
+html,
+body {
+  /* 阻断页面顶部的滚动链，避免触摸下拉触发浏览器刷新。 */
+  overscroll-behavior-y: none;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -410,6 +416,7 @@ input:focus-visible {
   max-height: inherit;
   padding: 22px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   border-radius: 8px;
   color: var(--text);
   background: var(--panel);

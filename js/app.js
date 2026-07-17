@@ -10,6 +10,7 @@ import {
 } from "./game-engine.js";
 import { GenshinThemeRenderer, GENSHIN_THEME } from "./genshin-theme.js";
 import { translations } from "./i18n.js";
+import { installPullToRefreshGuard } from "./touch-guards.js";
 
 const LANGUAGE_STORAGE_KEY = "hanoi-language";
 const THEME_STORAGE_KEY = "hanoi-theme";
@@ -1221,6 +1222,7 @@ window.addEventListener("resize", resizeCanvas);
 window.visualViewport?.addEventListener("resize", resizeCanvas);
 
 setInterval(updateTimer, 250);
+installPullToRefreshGuard();
 applyTheme();
 resizeCanvas();
 loadState().catch((error) => {
