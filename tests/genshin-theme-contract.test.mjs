@@ -24,6 +24,20 @@ test("Genshin exposes the approved adventure-handbook palette", () => {
   assert.match(css, /--genshin-start:\s*#ffc83d/i);
 });
 
+test("Genshin uses a dark theme-scoped focus outline on light surfaces", () => {
+  assert.match(
+    css,
+    /:root\[data-theme="genshin"\]\s+button:focus-visible,\s*:root\[data-theme="genshin"\]\s+input:focus-visible\s*\{[\s\S]*outline:\s*3px solid var\(--genshin-action-dark\)[\s\S]*outline-offset:\s*2px/,
+  );
+});
+
+test("Genshin small instructional text uses the approved dark ink", () => {
+  assert.match(
+    css,
+    /:root\[data-theme="genshin"\]\s+#configHint,\s*:root\[data-theme="genshin"\]\s+\.field small,\s*:root\[data-theme="genshin"\]\s+\.range-limits\s*\{[\s\S]*color:\s*var\(--genshin-ink\)/,
+  );
+});
+
 test("Genshin styles the new homepage structure and portrait launcher", () => {
   assert.match(css, /:root\[data-theme="genshin"\]\s+\.home-intro/);
   assert.match(css, /:root\[data-theme="genshin"\]\s+\.home-headline/);

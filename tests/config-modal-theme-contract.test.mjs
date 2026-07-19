@@ -52,3 +52,14 @@ test("Genshin portrait modal stacks controls but keeps actions side by side", ()
   assert.match(portrait, /\.position-control-row\s*\{[\s\S]*grid-template-columns:\s*1fr/);
   assert.match(portrait, /\.modal-actions\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,/);
 });
+
+test("Genshin action labels stay geometrically centered clear of compact glyphs", () => {
+  assert.match(
+    genshinCss,
+    /\.action-label\s*\{[\s\S]*position:\s*absolute[\s\S]*top:\s*50%[\s\S]*left:\s*50%[\s\S]*transform:\s*translate\(-50%,\s*-50%\)/,
+  );
+
+  const narrow = genshinCss.slice(genshinCss.indexOf("@media (max-width: 360px)"));
+  assert.match(narrow, /\.modal-actions button\s*\{[\s\S]*font-size:\s*12px/);
+  assert.match(narrow, /\.action-glyph\s*\{[\s\S]*width:\s*24px[\s\S]*height:\s*24px/);
+});

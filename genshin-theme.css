@@ -114,6 +114,12 @@
   display: none;
 }
 
+:root[data-theme="genshin"] button:focus-visible,
+:root[data-theme="genshin"] input:focus-visible {
+  outline: 3px solid var(--genshin-action-dark);
+  outline-offset: 2px;
+}
+
 :root[data-theme="genshin"] button:not(.peg-choice):hover {
   background: linear-gradient(180deg, #71809a, #5a6c89);
   filter: brightness(1.04);
@@ -266,6 +272,12 @@
   text-align: center;
 }
 
+:root[data-theme="genshin"] #configHint,
+:root[data-theme="genshin"] .field small,
+:root[data-theme="genshin"] .range-limits {
+  color: var(--genshin-ink);
+}
+
 :root[data-theme="genshin"] .field {
   margin-top: 12px;
   color: var(--genshin-ink);
@@ -388,10 +400,11 @@
 
 :root[data-theme="genshin"] .action-glyph-cancel { color: var(--genshin-cancel); }
 :root[data-theme="genshin"] .action-glyph-start { color: var(--genshin-start); }
-:root[data-theme="genshin"] .action-label { grid-area: 1 / 1; }
-
-:root[data-theme="genshin"] .range-limits {
-  color: var(--genshin-muted);
+:root[data-theme="genshin"] .action-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 :root[data-theme="genshin"] .form-error {
@@ -461,5 +474,20 @@
     left: 8px;
     width: 36px;
     height: 36px;
+  }
+}
+
+@media (max-width: 360px) {
+  :root[data-theme="genshin"] .modal-actions button {
+    padding-inline: 32px;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+
+  :root[data-theme="genshin"] .action-glyph {
+    left: 5px;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
   }
 }
