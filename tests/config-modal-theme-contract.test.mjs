@@ -30,3 +30,25 @@ test("shared themes place cancel left and start right while hiding decorative gl
   assert.match(sharedCss, /#submitConfigButton\s*\{[\s\S]*justify-self:\s*end/);
   assert.match(sharedCss, /\.action-glyph\s*\{[\s\S]*display:\s*none/);
 });
+
+test("Genshin configuration controls use the approved capsules and reference diamond", () => {
+  assert.match(genshinCss, /\.modal-frame\s*\{[\s\S]*width:\s*min\(720px,\s*100%\)/);
+  assert.match(genshinCss, /\.field-control-row\s*\{[\s\S]*border-radius:\s*999px/);
+  assert.match(genshinCss, /\.peg-choice\s*\{[\s\S]*border-radius:\s*999px/);
+  assert.match(genshinCss, /::-webkit-slider-thumb\s*\{[\s\S]*width:\s*28px[\s\S]*transform:\s*rotate\(45deg\)/);
+  assert.match(genshinCss, /::-webkit-slider-thumb\s*\{[\s\S]*border:\s*6px solid var\(--genshin-paper-highlight\)/);
+  assert.match(genshinCss, /::-webkit-slider-thumb\s*\{[\s\S]*box-shadow:[\s\S]*inset 0 0 0 1\.5px/);
+});
+
+test("only the Genshin theme reveals the decorative action glyphs", () => {
+  assert.match(genshinCss, /:root\[data-theme="genshin"\]\s+\.action-glyph\s*\{[\s\S]*display:\s*grid/);
+  assert.match(genshinCss, /\.action-glyph-cancel\s*\{[\s\S]*color:\s*var\(--genshin-cancel\)/);
+  assert.match(genshinCss, /\.action-glyph-start\s*\{[\s\S]*color:\s*var\(--genshin-start\)/);
+});
+
+test("Genshin portrait modal stacks controls but keeps actions side by side", () => {
+  const portrait = genshinCss.slice(genshinCss.indexOf("@media (orientation: portrait) and (max-width: 600px)"));
+  assert.match(portrait, /\.disk-count-row\s*\{[\s\S]*grid-template-areas:[\s\S]*"label value"[\s\S]*"slider slider"/);
+  assert.match(portrait, /\.position-control-row\s*\{[\s\S]*grid-template-columns:\s*1fr/);
+  assert.match(portrait, /\.modal-actions\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,/);
+});

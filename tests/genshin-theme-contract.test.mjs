@@ -7,11 +7,21 @@ const renderer = await readFile(new URL("../js/genshin-theme.js", import.meta.ur
 
 test("Genshin preserves its assets, typography, gold accent, and hover fix", () => {
   assert.match(css, /url\("genshin_theme\/homepage\.webp"\)/);
-  assert.match(css, /--border:\s*#c8ae78/i);
+  assert.match(css, /--border:\s*var\(--genshin-gold\)/i);
   assert.match(css, /:root\[data-theme="genshin"\]\s+body\s*\{[\s\S]*HYWenHei-65W/);
   assert.match(css, /button:not\(\.peg-choice\):hover/);
   assert.doesNotMatch(css, /\.peg-choice:hover/);
   assert.doesNotMatch(css, /#0a84ff/i);
+});
+
+test("Genshin exposes the approved adventure-handbook palette", () => {
+  assert.match(css, /--genshin-paper:\s*#f3f0e5/i);
+  assert.match(css, /--genshin-paper-highlight:\s*#fffdf5/i);
+  assert.match(css, /--genshin-ink:\s*#4b566e/i);
+  assert.match(css, /--genshin-action:\s*#53617c/i);
+  assert.match(css, /--genshin-gold:\s*#c8aa69/i);
+  assert.match(css, /--genshin-cancel:\s*#ff6262/i);
+  assert.match(css, /--genshin-start:\s*#ffc83d/i);
 });
 
 test("Genshin styles the new homepage structure and portrait launcher", () => {
