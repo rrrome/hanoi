@@ -25,6 +25,21 @@ test("modal actions keep IDs, localized labels, decorative glyphs, and left-righ
   );
 });
 
+test("Genshin action glyphs are CSS graphics rather than Unicode symbols", () => {
+  const actions = html.slice(html.indexOf('<div class="modal-actions">'), html.indexOf("</div>", html.indexOf('<div class="modal-actions">')) + 6);
+  assert.match(actions, /class="action-glyph action-glyph-cancel" aria-hidden="true"><\/span>/);
+  assert.match(actions, /class="action-glyph action-glyph-start" aria-hidden="true"><\/span>/);
+  assert.doesNotMatch(actions, /[×▶✕❌▶️]/u);
+
+  const cancelBefore = ruleBody(genshinCss, ':root[data-theme="genshin"] .action-glyph-cancel::before');
+  const cancelAfter = ruleBody(genshinCss, ':root[data-theme="genshin"] .action-glyph-cancel::after');
+  const startBefore = ruleBody(genshinCss, ':root[data-theme="genshin"] .action-glyph-start::before');
+  assert.equal(declarationValue(cancelBefore, "content"), '\"\"');
+  assert.equal(declarationValue(cancelAfter, "content"), '\"\"');
+  assert.equal(declarationValue(startBefore, "content"), '\"\"');
+  assert.match(declarationValue(startBefore, "border-left"), /solid currentColor/);
+});
+
 test("shared themes place cancel left and start right while hiding decorative glyphs", () => {
   assert.equal(declarationValue(ruleBody(sharedCss, ".modal-actions"), "grid-template-columns"), "repeat(2, minmax(0, 1fr))");
   assert.equal(declarationValue(ruleBody(sharedCss, "#cancelConfigButton"), "justify-self"), "start");
