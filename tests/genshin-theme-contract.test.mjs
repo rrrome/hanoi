@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const css = await readFile(new URL("../genshin-theme.css", import.meta.url), "utf8");
+const renderer = await readFile(new URL("../js/genshin-theme.js", import.meta.url), "utf8");
 
 test("Genshin preserves its assets, typography, gold accent, and hover fix", () => {
   assert.match(css, /url\("genshin_theme\/homepage\.webp"\)/);
@@ -27,4 +28,14 @@ test("Genshin stylesheet braces are balanced", () => {
     assert.ok(balance >= 0, "closing brace appears before a matching opening brace");
   }
   assert.equal(balance, 0, "stylesheet has unmatched braces");
+});
+
+test("Genshin lowers saturation only while drawing a gear", () => {
+  assert.match(renderer, /GEAR_SATURATION_FILTER\s*=\s*"saturate\(0\.9\)"/);
+  assert.match(
+    renderer,
+    /if \(gear\) \{\s*this\.ctx\.filter = GEAR_SATURATION_FILTER;\s*this\.ctx\.drawImage\(gear,[\s\S]*?\}\s*else \{/,
+  );
+  assert.doesNotMatch(renderer, /drawBackdrop[\s\S]{0,300}GEAR_SATURATION_FILTER/);
+  assert.doesNotMatch(renderer, /drawColumns[\s\S]{0,300}GEAR_SATURATION_FILTER/);
 });

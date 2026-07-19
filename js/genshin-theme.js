@@ -6,6 +6,7 @@ const COLUMN_JOIN_OFFSET_Y = 5;
 const COLUMN_SHAFT_SOURCE = { x: 37, y: 320, width: 98, height: 838 };
 const GEAR_SOURCE_CROP = { x: 210, y: 250, width: 1110, height: 610 };
 const GEAR_VISIBLE_BOUNDS = { x: 44, y: 29, width: 974, height: 499 };
+const GEAR_SATURATION_FILTER = "saturate(0.9)";
 const GEAR_HEIGHT_RATIO = 0.65;
 const GEAR_STACK_SPACING_RATIO = 0.65;
 const GEAR_STACK_BASE_Y = 735;
@@ -647,6 +648,7 @@ export class GenshinThemeRenderer {
     this.ctx.shadowBlur = lifted ? 18 : 10;
     this.ctx.shadowOffsetY = lifted ? 10 : 4;
     if (gear) {
+      this.ctx.filter = GEAR_SATURATION_FILTER;
       this.ctx.drawImage(gear, drawRect.x, drawRect.y, drawRect.width, drawRect.height);
     } else {
       this.drawFallbackDisk(rect, disk, lifted, colors);
