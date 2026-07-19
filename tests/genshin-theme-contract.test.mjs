@@ -38,6 +38,16 @@ test("Genshin dark bars use a scoped light focus outline", () => {
   );
 });
 
+test("Genshin nested theme menu restores dark focus after the bar override", () => {
+  const barOverrideIndex = css.indexOf(':root[data-theme="genshin"] .topbar button:focus-visible,');
+  const menuReset = css.match(
+    /:root\[data-theme="genshin"\]\s+\.topbar \.theme-menu button:focus-visible\s*\{[^}]*outline-color:\s*var\(--genshin-action-dark\)/,
+  );
+
+  assert.ok(menuReset, "missing Genshin paper-menu focus reset");
+  assert.ok(menuReset.index > barOverrideIndex, "paper-menu reset must follow the broad dark-bar override");
+});
+
 test("Genshin small instructional text uses the approved dark ink", () => {
   assert.match(
     css,
