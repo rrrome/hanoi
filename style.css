@@ -518,6 +518,15 @@ input:focus-visible {
   margin-bottom: 8px;
 }
 
+.modal-corners,
+.action-glyph {
+  display: none;
+}
+
+.field-control-row {
+  display: contents;
+}
+
 .field {
   display: grid;
   gap: 7px;
@@ -652,10 +661,22 @@ input:focus-visible {
 }
 
 .modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 5vw, 40px);
   margin-top: 16px;
+}
+
+.modal-actions button {
+  width: 100%;
+}
+
+#cancelConfigButton {
+  justify-self: start;
+}
+
+#submitConfigButton {
+  justify-self: end;
 }
 
 .topbar,

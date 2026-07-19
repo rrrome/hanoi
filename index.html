@@ -102,40 +102,58 @@
 
     <div id="configModal" class="modal-backdrop" hidden>
       <div class="modal-frame">
+        <span class="modal-corners" aria-hidden="true">
+          <span class="modal-corner modal-corner-top-left"></span>
+          <span class="modal-corner modal-corner-top-right"></span>
+          <span class="modal-corner modal-corner-bottom-left"></span>
+          <span class="modal-corner modal-corner-bottom-right"></span>
+        </span>
         <form id="configForm" class="modal" novalidate>
           <h2 id="configTitle">新游戏</h2>
           <p id="configHint"></p>
 
           <label class="field disk-count-field">
-            <span class="field-heading">
-              <span data-i18n="diskCountLabel">盘子数量</span>
-              <output id="modalDiskCountValue" for="modalDiskCount">7</output>
-            </span>
-            <span class="disk-count-control">
-              <input id="modalDiskCount" type="range" min="2" max="10" step="1" value="7" aria-describedby="diskCountHint" required />
-              <span class="range-limits" aria-hidden="true">
-                <span>2</span>
-                <span>10</span>
+            <span class="field-control-row disk-count-row">
+              <span class="field-heading">
+                <span data-i18n="diskCountLabel">盘子数量</span>
+                <output id="modalDiskCountValue" for="modalDiskCount">7</output>
+              </span>
+              <span class="disk-count-control">
+                <input id="modalDiskCount" type="range" min="2" max="10" step="1" value="7" aria-describedby="diskCountHint" required />
+                <span class="range-limits" aria-hidden="true">
+                  <span>2</span>
+                  <span>10</span>
+                </span>
               </span>
             </span>
             <small id="diskCountHint" data-i18n="diskCountHint">拖动滑块选择 2 到 10 个盘子。</small>
           </label>
 
           <div class="field">
-            <span data-i18n="initialPegLabel">初始盘子位置</span>
-            <div id="initialPegButtons" class="peg-button-group" role="group" aria-label="初始盘子位置"></div>
+            <div class="field-control-row position-control-row">
+              <span data-i18n="initialPegLabel">初始盘子位置</span>
+              <div id="initialPegButtons" class="peg-button-group" role="group" aria-label="初始盘子位置"></div>
+            </div>
           </div>
 
           <div class="field">
-            <span data-i18n="targetPegLabel">目标盘子位置</span>
-            <div id="targetPegButtons" class="peg-button-group" role="group" aria-label="目标盘子位置"></div>
+            <div class="field-control-row position-control-row">
+              <span data-i18n="targetPegLabel">目标盘子位置</span>
+              <div id="targetPegButtons" class="peg-button-group" role="group" aria-label="目标盘子位置"></div>
+            </div>
           </div>
 
           <p id="configError" class="form-error" role="alert"></p>
 
           <div class="modal-actions">
-            <button class="secondary-button" type="button" id="cancelConfigButton" data-i18n="cancelButton">取消</button>
-            <button type="submit" id="submitConfigButton" data-i18n="startButton">开始</button>
+            <button class="secondary-button" type="button" id="cancelConfigButton">
+              <span class="action-glyph action-glyph-cancel" aria-hidden="true">×</span>
+              <span class="action-label" data-i18n="cancelButton">取消</span>
+            </button>
+            <button type="submit" id="submitConfigButton">
+              <span class="action-glyph action-glyph-start" aria-hidden="true">▶</span>
+              <span class="action-label" data-i18n="startButton">开始</span>
+            </button>
           </div>
         </form>
       </div>
