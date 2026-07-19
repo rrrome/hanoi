@@ -26,13 +26,13 @@ const STANDARD_DISK_MAX_HEIGHT = 24;
 const STANDARD_PEG_CLEARANCE_LEVELS = 2;
 
 const diskGradientStops = [
-  "#f07a44",
-  "#fb8c42",
-  "#fdbd49",
-  "#d8c54c",
-  "#abb46b",
-  "#82adac",
-  "#978fb4",
+  "#bf5af2",
+  "#0a84ff",
+  "#5ac8fa",
+  "#30d158",
+  "#ffd60a",
+  "#ff9f0a",
+  "#ff453a",
 ];
 
 
@@ -965,19 +965,30 @@ function drawGuideMoveArrow(sourceX, targetX, y, colors = getBoardColors()) {
 }
 
 function drawDisk(rect, disk, lifted, colors = getBoardColors()) {
+  const diskColor = getDiskColor(disk);
+  const diskGradient = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.height);
+  diskGradient.addColorStop(0, mixHexColors(diskColor, "#ffffff", 0.28));
+  diskGradient.addColorStop(0.42, diskColor);
+  diskGradient.addColorStop(1, mixHexColors(diskColor, "#000000", 0.16));
+
+  ctx.save();
   ctx.shadowColor = lifted ? colors.diskShadowLifted : colors.diskShadow;
   ctx.shadowBlur = lifted ? 16 : 8;
   ctx.shadowOffsetY = lifted ? 8 : 3;
-  ctx.fillStyle = getDiskColor(disk);
+  ctx.fillStyle = diskGradient;
   roundRect(ctx, rect.x, rect.y, rect.width, rect.height, 7);
   ctx.fill();
   ctx.shadowColor = "transparent";
+  ctx.strokeStyle = mixHexColors(diskColor, "#ffffff", 0.2);
+  ctx.lineWidth = 1;
+  ctx.stroke();
 
   ctx.fillStyle = colors.diskLabel;
-  ctx.font = `700 ${Math.max(9, Math.min(12, rect.height - 4))}px Arial`;
+  ctx.font = `700 ${Math.max(9, Math.min(12, rect.height - 4))}px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(String(disk), rect.x + rect.width / 2, rect.y + rect.height / 2);
+  ctx.restore();
 }
 
 function getBoardColors() {
