@@ -102,10 +102,12 @@ test("compact landscape resets shared bar spacing without losing compact rhythm"
   );
   const topbarRules = ruleBodies(compact, ".topbar");
   const modebarRules = ruleBodies(compact, ".modebar");
+  const homeActionRules = ruleBodies(compact, ".home-actions");
 
-  assert.ok(topbarRules.some((body) => /padding:\s*0\s*;/.test(body)), "compact topbar padding must reset");
+  assert.ok(topbarRules.some((body) => /padding:\s*6px\s+10px\s*;/.test(body)), "compact topbar must expand around its controls");
   assert.ok(modebarRules.some((body) => /padding:\s*0\s*;/.test(body)), "compact modebar padding must reset");
   assert.ok(modebarRules.some((body) => /margin-top:\s*0\s*;/.test(body)), "compact modebar top margin must reset");
   assert.ok(topbarRules.some((body) => /gap:\s*8px/.test(body) && /margin-bottom:\s*6px/.test(body)));
   assert.ok(modebarRules.some((body) => /gap:\s*8px/.test(body) && /margin-bottom:\s*6px/.test(body)));
+  assert.ok(homeActionRules.some((body) => /margin-inline:\s*auto\s*;/.test(body)), "compact home actions must be centered");
 });

@@ -25,15 +25,19 @@ test("home page owns the three mode launchers and exposes semantic intro hooks",
 });
 
 test("both languages define the new homepage copy", async () => {
-  const { translations } = await import("../js/i18n.js");
+  const { applyThemeTerminology, translations } = await import("../js/i18n.js");
   assert.deepEqual(
     {
       zh: [translations.zh.homeEyebrow, translations.zh.homeHeadline, translations.zh.homeDescription, translations.zh.homePrivacy],
       en: [translations.en.homeEyebrow, translations.en.homeHeadline, translations.en.homeDescription, translations.en.homePrivacy],
     },
     {
-      zh: ["经典逻辑游戏", "把复杂，一步步放回秩序。", "移动圆盘，建立路径，在最少步数里完成一次清晰的推演。", "所有计算均在浏览器本地完成"],
-      en: ["A CLASSIC LOGIC GAME", "Put complexity back in order, one move at a time.", "Move the disks, build a path, and complete a clear line of reasoning in the fewest possible moves.", "Everything runs locally in your browser"],
+      zh: ["游戏规则", "一次只移动一个盘子", "只能移动每根柱子最上方的盘子，大盘子不能放在小盘子上。将所有盘子移到目标柱即可完成。", "所有计算均在浏览器本地完成"],
+      en: ["HOW TO PLAY", "Move one disk at a time", "Only the top disk on a peg can move, and a larger disk cannot sit on a smaller one. Move the full stack to a target peg to win.", "Everything runs locally in your browser"],
     },
+  );
+  assert.equal(
+    applyThemeTerminology(translations.zh.homeDescription, "zh", true),
+    "只能移动每根柱子最上方的齿轮，大齿轮不能放在小齿轮上。将所有齿轮移到目标柱即可完成。",
   );
 });

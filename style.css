@@ -984,11 +984,15 @@ input:focus-visible {
     flex-direction: row;
     gap: 8px;
     margin-bottom: 6px;
-    padding: 0;
+  }
+
+  .topbar {
+    padding: 6px 10px;
   }
 
   .modebar {
     margin-top: 0;
+    padding: 0;
   }
 
   .brand-row {
@@ -1046,6 +1050,7 @@ input:focus-visible {
     gap: 8px;
     width: min(720px, 92vw);
     padding: 16px;
+    margin-inline: auto;
   }
 
   .home-actions button {
