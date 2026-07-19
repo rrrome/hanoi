@@ -120,6 +120,13 @@
   outline-offset: 2px;
 }
 
+:root[data-theme="genshin"] .topbar button:focus-visible,
+:root[data-theme="genshin"] .topbar input:focus-visible,
+:root[data-theme="genshin"] .modebar button:focus-visible,
+:root[data-theme="genshin"] .modebar input:focus-visible {
+  outline-color: var(--genshin-paper-highlight);
+}
+
 :root[data-theme="genshin"] button:not(.peg-choice):hover {
   background: linear-gradient(180deg, #71809a, #5a6c89);
   filter: brightness(1.04);

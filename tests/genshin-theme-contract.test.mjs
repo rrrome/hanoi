@@ -31,6 +31,13 @@ test("Genshin uses a dark theme-scoped focus outline on light surfaces", () => {
   );
 });
 
+test("Genshin dark bars use a scoped light focus outline", () => {
+  assert.match(
+    css,
+    /:root\[data-theme="genshin"\]\s+\.topbar button:focus-visible,\s*:root\[data-theme="genshin"\]\s+\.topbar input:focus-visible,\s*:root\[data-theme="genshin"\]\s+\.modebar button:focus-visible,\s*:root\[data-theme="genshin"\]\s+\.modebar input:focus-visible\s*\{[\s\S]*outline-color:\s*var\(--genshin-paper-highlight\)/,
+  );
+});
+
 test("Genshin small instructional text uses the approved dark ink", () => {
   assert.match(
     css,
