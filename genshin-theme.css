@@ -176,6 +176,12 @@
   padding: 9px;
 }
 
+:root[data-theme="genshin"] .stats span,
+:root[data-theme="genshin"] .guide-slider-panel label,
+:root[data-theme="genshin"] .guide-slider-panel #guideSliderValue {
+  color: var(--genshin-ink);
+}
+
 :root[data-theme="genshin"] .home-content {
   display: grid;
   justify-items: center;
@@ -422,6 +428,42 @@
   text-align: center;
 }
 
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme="genshin"] {
+    --genshin-control: #dcd9d1;
+    --genshin-surface-opacity: 1;
+    --panel: #f3f0e5;
+    --secondary-bg: #fffdf5;
+    --input-bg: #f8f5eb;
+  }
+
+  :root[data-theme="genshin"] .topbar,
+  :root[data-theme="genshin"] .modebar {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #31404e;
+  }
+
+  :root[data-theme="genshin"] .home-actions,
+  :root[data-theme="genshin"] .theme-menu,
+  :root[data-theme="genshin"] .guide-slider-panel,
+  :root[data-theme="genshin"] .modal {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--genshin-paper);
+  }
+
+  :root[data-theme="genshin"] .modal-backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #141b25;
+  }
+
+  :root[data-theme="genshin"] .peg-choice {
+    background: #f4f1e8;
+  }
+}
+
 @media (orientation: portrait) and (max-width: 600px) {
   :root[data-theme="genshin"] .home-intro {
     text-align: left;
@@ -500,5 +542,38 @@
     width: 24px;
     height: 24px;
     font-size: 14px;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse) {
+  :root[data-theme="genshin"] .modal .position-control-row {
+    grid-template-columns: minmax(72px, 0.8fr) minmax(108px, 1.2fr);
+    gap: 6px;
+    min-height: 44px;
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  :root[data-theme="genshin"] .modal .position-control-row > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :root[data-theme="genshin"] .modal .peg-button-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    min-width: 0;
+  }
+
+  :root[data-theme="genshin"] .modal .peg-choice {
+    min-width: 0;
+    height: 36px;
+    min-height: 36px;
+    padding-inline: 3px;
+    font-size: 11px;
+    letter-spacing: 0;
+    white-space: nowrap;
   }
 }

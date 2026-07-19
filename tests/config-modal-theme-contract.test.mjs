@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { atRuleBody, declarationValue, ruleBody } from "./helpers/css-blocks.mjs";
 
 const root = new URL("../", import.meta.url);
 const html = await readFile(new URL("index.html", root), "utf8");
@@ -25,41 +26,75 @@ test("modal actions keep IDs, localized labels, decorative glyphs, and left-righ
 });
 
 test("shared themes place cancel left and start right while hiding decorative glyphs", () => {
-  assert.match(sharedCss, /\.modal-actions\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
-  assert.match(sharedCss, /#cancelConfigButton\s*\{[\s\S]*justify-self:\s*start/);
-  assert.match(sharedCss, /#submitConfigButton\s*\{[\s\S]*justify-self:\s*end/);
-  assert.match(sharedCss, /\.action-glyph\s*\{[\s\S]*display:\s*none/);
+  assert.equal(declarationValue(ruleBody(sharedCss, ".modal-actions"), "grid-template-columns"), "repeat(2, minmax(0, 1fr))");
+  assert.equal(declarationValue(ruleBody(sharedCss, "#cancelConfigButton"), "justify-self"), "start");
+  assert.equal(declarationValue(ruleBody(sharedCss, "#submitConfigButton"), "justify-self"), "end");
+  assert.equal(declarationValue(ruleBody(sharedCss, ".action-glyph"), "display"), "none");
 });
 
 test("Genshin configuration controls use the approved capsules and reference diamond", () => {
-  assert.match(genshinCss, /\.modal-frame\s*\{[\s\S]*width:\s*min\(720px,\s*100%\)/);
-  assert.match(genshinCss, /\.field-control-row\s*\{[\s\S]*border-radius:\s*999px/);
-  assert.match(genshinCss, /\.peg-choice\s*\{[\s\S]*border-radius:\s*999px/);
-  assert.match(genshinCss, /::-webkit-slider-thumb\s*\{[\s\S]*width:\s*28px[\s\S]*transform:\s*rotate\(45deg\)/);
-  assert.match(genshinCss, /::-webkit-slider-thumb\s*\{[\s\S]*border:\s*6px solid var\(--genshin-paper-highlight\)/);
-  assert.match(genshinCss, /::-webkit-slider-thumb\s*\{[\s\S]*box-shadow:[\s\S]*inset 0 0 0 1\.5px/);
+  const thumb = ruleBody(genshinCss, ':root[data-theme="genshin"] .field input[type="range"]::-webkit-slider-thumb');
+  assert.equal(declarationValue(ruleBody(genshinCss, ':root[data-theme="genshin"] .modal-frame'), "width"), "min(720px, 100%)");
+  assert.equal(declarationValue(ruleBody(genshinCss, ':root[data-theme="genshin"] .field-control-row'), "border-radius"), "999px");
+  assert.equal(declarationValue(ruleBody(genshinCss, ':root[data-theme="genshin"] .peg-choice'), "border-radius"), "999px");
+  assert.equal(declarationValue(thumb, "width"), "28px");
+  assert.equal(declarationValue(thumb, "transform"), "rotate(45deg)");
+  assert.equal(declarationValue(thumb, "border"), "6px solid var(--genshin-paper-highlight)");
+  assert.match(declarationValue(thumb, "box-shadow"), /inset 0 0 0 1\.5px/);
 });
 
 test("only the Genshin theme reveals the decorative action glyphs", () => {
-  assert.match(genshinCss, /:root\[data-theme="genshin"\]\s+\.action-glyph\s*\{[\s\S]*display:\s*grid/);
-  assert.match(genshinCss, /\.action-glyph-cancel\s*\{[\s\S]*color:\s*var\(--genshin-cancel\)/);
-  assert.match(genshinCss, /\.action-glyph-start\s*\{[\s\S]*color:\s*var\(--genshin-start\)/);
+  assert.equal(declarationValue(ruleBody(genshinCss, ':root[data-theme="genshin"] .action-glyph'), "display"), "grid");
+  assert.equal(declarationValue(ruleBody(genshinCss, ':root[data-theme="genshin"] .action-glyph-cancel'), "color"), "var(--genshin-cancel)");
+  assert.equal(declarationValue(ruleBody(genshinCss, ':root[data-theme="genshin"] .action-glyph-start'), "color"), "var(--genshin-start)");
 });
 
 test("Genshin portrait modal stacks controls but keeps actions side by side", () => {
-  const portrait = genshinCss.slice(genshinCss.indexOf("@media (orientation: portrait) and (max-width: 600px)"));
-  assert.match(portrait, /\.disk-count-row\s*\{[\s\S]*grid-template-areas:[\s\S]*"label value"[\s\S]*"slider slider"/);
-  assert.match(portrait, /\.position-control-row\s*\{[\s\S]*grid-template-columns:\s*1fr/);
-  assert.match(portrait, /\.modal-actions\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,/);
+  const portrait = atRuleBody(genshinCss, "@media (orientation: portrait) and (max-width: 600px)");
+  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .disk-count-row'), "grid-template-areas"), '"label value" "slider slider"');
+  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .position-control-row'), "grid-template-columns"), "1fr");
+  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .modal-actions'), "grid-template-columns"), "repeat(2, minmax(0, 1fr))");
 });
 
 test("Genshin action labels stay geometrically centered clear of compact glyphs", () => {
-  assert.match(
-    genshinCss,
-    /\.action-label\s*\{[\s\S]*position:\s*absolute[\s\S]*top:\s*50%[\s\S]*left:\s*50%[\s\S]*transform:\s*translate\(-50%,\s*-50%\)/,
-  );
+  const label = ruleBody(genshinCss, ':root[data-theme="genshin"] .action-label');
+  assert.equal(declarationValue(label, "position"), "absolute");
+  assert.equal(declarationValue(label, "top"), "50%");
+  assert.equal(declarationValue(label, "left"), "50%");
+  assert.equal(declarationValue(label, "transform"), "translate(-50%, -50%)");
 
-  const narrow = genshinCss.slice(genshinCss.indexOf("@media (max-width: 360px)"));
-  assert.match(narrow, /\.modal-actions button\s*\{[\s\S]*font-size:\s*12px/);
-  assert.match(narrow, /\.action-glyph\s*\{[\s\S]*width:\s*24px[\s\S]*height:\s*24px/);
+  const narrow = atRuleBody(genshinCss, "@media (max-width: 360px)");
+  assert.equal(declarationValue(ruleBody(narrow, ':root[data-theme="genshin"] .modal-actions button'), "font-size"), "12px");
+  const glyph = ruleBody(narrow, ':root[data-theme="genshin"] .action-glyph');
+  assert.equal(declarationValue(glyph, "width"), "24px");
+  assert.equal(declarationValue(glyph, "height"), "24px");
+});
+
+test("Genshin compact landscape preserves three usable peg choices at 568px and 667px", () => {
+  const compactPrelude = "@media (orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse)";
+  const sharedCompact = atRuleBody(sharedCss, compactPrelude);
+  const genshinCompact = atRuleBody(genshinCss, compactPrelude);
+  const positionRow = ruleBody(genshinCompact, ':root[data-theme="genshin"] .modal .position-control-row');
+  const pegGroup = ruleBody(genshinCompact, ':root[data-theme="genshin"] .modal .peg-button-group');
+  const pegChoice = ruleBody(genshinCompact, ':root[data-theme="genshin"] .modal .peg-choice');
+
+  assert.equal(declarationValue(positionRow, "grid-template-columns"), "minmax(72px, 0.8fr) minmax(108px, 1.2fr)");
+  assert.equal(declarationValue(positionRow, "gap"), "6px");
+  assert.equal(declarationValue(positionRow, "padding"), "4px 8px");
+  assert.equal(declarationValue(pegGroup, "grid-template-columns"), "repeat(3, minmax(0, 1fr))");
+  assert.equal(declarationValue(pegGroup, "gap"), "4px");
+  assert.equal(declarationValue(pegChoice, "min-width"), "0");
+  assert.equal(declarationValue(pegChoice, "white-space"), "nowrap");
+
+  const modal = ruleBody(sharedCompact, ".modal", /grid-template-columns:/);
+  assert.equal(declarationValue(modal, "grid-template-columns"), "repeat(2, minmax(0, 1fr))");
+  for (const viewportWidth of [568, 667]) {
+    const modalWidth = viewportWidth - 16;
+    const modalContentWidth = modalWidth - 32;
+    const fieldWidth = (modalContentWidth - 12) / 2 - 16;
+    const rowContentWidth = fieldWidth - 16 - 6;
+    const pegGroupWidth = rowContentWidth * (1.2 / 2);
+    const pegWidth = (pegGroupWidth - 8) / 3;
+    assert.ok(pegWidth >= 40, `${viewportWidth}px landscape leaves only ${pegWidth.toFixed(1)}px per peg`);
+  }
 });
