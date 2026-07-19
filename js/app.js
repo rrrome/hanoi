@@ -7,11 +7,11 @@ import {
   getGuideMove,
   readLocalState,
   runAction,
-} from "./game-engine.js?v=20260717-2";
-import { GenshinThemeRenderer, GENSHIN_THEME } from "./genshin-theme.js?v=20260717-2";
-import { applyThemeTerminology, translations } from "./i18n.js?v=20260717-2";
-import { bindPressAndHold } from "./press-hold.js?v=20260717-2";
-import { installPullToRefreshGuard } from "./touch-guards.js?v=20260717-2";
+} from "./game-engine.js?v=20260719-1";
+import { GenshinThemeRenderer, GENSHIN_THEME } from "./genshin-theme.js?v=20260719-1";
+import { applyThemeTerminology, translations } from "./i18n.js?v=20260719-1";
+import { bindPressAndHold } from "./press-hold.js?v=20260719-1";
+import { installPullToRefreshGuard } from "./touch-guards.js?v=20260719-1";
 
 const LANGUAGE_STORAGE_KEY = "hanoi-language";
 const THEME_STORAGE_KEY = "hanoi-theme";

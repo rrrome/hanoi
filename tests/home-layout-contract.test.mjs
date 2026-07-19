@@ -24,6 +24,23 @@ test("home page owns the three mode launchers and exposes semantic intro hooks",
   }
 });
 
+test("homepage markup ships the current Chinese rules as its static fallback", async () => {
+  const html = await readProjectFile("index.html");
+  const homeMarkup = html.slice(html.indexOf('<section id="homeView"'), html.indexOf('<section id="gameView"'));
+  assert.match(homeMarkup, /data-i18n="homeEyebrow">游戏规则<\/p>/);
+  assert.match(homeMarkup, /data-i18n="homeHeadline">一次只移动一个盘子<\/h2>/);
+  assert.match(homeMarkup, /data-i18n="homeDescription">只能移动每根柱子最上方的盘子，大盘子不能放在小盘子上。将所有盘子移到目标柱即可完成。<\/p>/);
+});
+
+test("browser modules share the current cache version", async () => {
+  const [html, app] = await Promise.all([readProjectFile("index.html"), readProjectFile("js/app.js")]);
+  const version = "20260719-1";
+  assert.match(html, new RegExp(`src="js/app\\.js\\?v=${version}"`));
+  for (const moduleName of ["game-engine", "genshin-theme", "i18n", "press-hold", "touch-guards"]) {
+    assert.match(app, new RegExp(`from "\\./${moduleName}\\.js\\?v=${version}"`));
+  }
+});
+
 test("both languages define the new homepage copy", async () => {
   const { applyThemeTerminology, translations } = await import("../js/i18n.js");
   assert.deepEqual(
@@ -39,5 +56,10 @@ test("both languages define the new homepage copy", async () => {
   assert.equal(
     applyThemeTerminology(translations.zh.homeDescription, "zh", true),
     "只能移动每根柱子最上方的齿轮，大齿轮不能放在小齿轮上。将所有齿轮移到目标柱即可完成。",
+  );
+  assert.equal(applyThemeTerminology(translations.en.homeHeadline, "en", true), "Move one gear at a time");
+  assert.equal(
+    applyThemeTerminology(translations.en.homeDescription, "en", true),
+    "Only the top gear on a peg can move, and a larger gear cannot sit on a smaller one. Move the full stack to a target peg to win.",
   );
 });
