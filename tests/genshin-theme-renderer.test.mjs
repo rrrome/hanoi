@@ -32,3 +32,35 @@ test("drawDisk bounds the saturation filter to the saved gear draw", () => {
     "restore",
   ]);
 });
+
+test("drawDisk restores the context without filtering a fallback disk", () => {
+  const calls = [];
+  const rect = { x: 1, y: 2, width: 3, height: 4 };
+  const renderer = Object.create(GenshinThemeRenderer.prototype);
+  renderer.ctx = {
+    save() { calls.push("save"); },
+    restore() { calls.push("restore"); },
+    set filter(value) { calls.push(`filter=${value}`); },
+    set shadowColor(_value) {},
+    set shadowBlur(_value) {},
+    set shadowOffsetY(_value) {},
+  };
+  renderer.getDiskColor = () => "#abcdef";
+  renderer.getTintedGear = () => null;
+  renderer.getGearDrawRect = () => ({ x: 10, y: 20, width: 30, height: 40 });
+  renderer.drawFallbackDisk = (...args) => calls.push(["fallback", ...args]);
+
+  renderer.drawDisk(rect, 7, true, {
+    diskShadow: "shadow",
+    diskShadowLifted: "lifted-shadow",
+  });
+
+  assert.deepEqual(calls, [
+    "save",
+    ["fallback", rect, 7, true, {
+      diskShadow: "shadow",
+      diskShadowLifted: "lifted-shadow",
+    }],
+    "restore",
+  ]);
+});

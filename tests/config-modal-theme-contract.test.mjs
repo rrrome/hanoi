@@ -80,21 +80,45 @@ test("Genshin compact landscape preserves three usable peg choices at 568px and 
 
   assert.equal(declarationValue(positionRow, "grid-template-columns"), "minmax(72px, 0.8fr) minmax(108px, 1.2fr)");
   assert.equal(declarationValue(positionRow, "gap"), "6px");
-  assert.equal(declarationValue(positionRow, "padding"), "4px 8px");
   assert.equal(declarationValue(pegGroup, "grid-template-columns"), "repeat(3, minmax(0, 1fr))");
   assert.equal(declarationValue(pegGroup, "gap"), "4px");
   assert.equal(declarationValue(pegChoice, "min-width"), "0");
   assert.equal(declarationValue(pegChoice, "white-space"), "nowrap");
 
   const modal = ruleBody(sharedCompact, ".modal", /grid-template-columns:/);
+  const field = ruleBody(sharedCompact, ".field", /padding:/);
+  const modalBorder = ruleBody(genshinCss, ':root[data-theme="genshin"] .modal');
+  const rowBorder = ruleBody(genshinCss, ':root[data-theme="genshin"] .field-control-row');
+  const positionPadding = declarationValue(positionRow, "padding").match(/^(?:\d+px|0)\s+(\d+)px$/);
+  assert.ok(positionPadding, "compact position padding must use vertical/horizontal pixel values");
+  const modalPadding = declarationValue(modal, "padding").match(/^\d+px\s+(\d+)px$/);
+  const fieldPadding = declarationValue(field, "padding").match(/^\d+px\s+(\d+)px$/);
+  const modalBorderWidth = Number.parseFloat(declarationValue(modalBorder, "border"));
+  const rowBorderWidth = Number.parseFloat(declarationValue(rowBorder, "border"));
+  assert.ok(modalPadding && fieldPadding, "compact modal and field padding must use two pixel values");
+
+  const backdropInlinePadding = 8;
+  const modalInlinePadding = Number(modalPadding[1]);
+  const fieldInlinePadding = Number(fieldPadding[1]);
+  const positionInlinePadding = Number(positionPadding[1]);
   assert.equal(declarationValue(modal, "grid-template-columns"), "repeat(2, minmax(0, 1fr))");
   for (const viewportWidth of [568, 667]) {
-    const modalWidth = viewportWidth - 16;
-    const modalContentWidth = modalWidth - 32;
-    const fieldWidth = (modalContentWidth - 12) / 2 - 16;
-    const rowContentWidth = fieldWidth - 16 - 6;
+    const modalWidth = viewportWidth - 2 * backdropInlinePadding;
+    const modalContentWidth = modalWidth - 2 * modalBorderWidth - 2 * modalInlinePadding;
+    const fieldWidth = (modalContentWidth - 12) / 2 - 2 * fieldInlinePadding;
+    const rowContentWidth = fieldWidth - 2 * rowBorderWidth - 2 * positionInlinePadding - 6;
     const pegGroupWidth = rowContentWidth * (1.2 / 2);
     const pegWidth = (pegGroupWidth - 8) / 3;
     assert.ok(pegWidth >= 40, `${viewportWidth}px landscape leaves only ${pegWidth.toFixed(1)}px per peg`);
   }
+});
+
+test("Genshin compact landscape keeps peg choices at the approved 44px touch height", () => {
+  const compact = atRuleBody(
+    genshinCss,
+    "@media (orientation: landscape) and (max-width: 1024px) and (max-height: 600px) and (any-pointer: coarse)",
+  );
+  const pegChoice = ruleBody(compact, ':root[data-theme="genshin"] .modal .peg-choice');
+  assert.ok(Number.parseFloat(declarationValue(pegChoice, "height")) >= 44);
+  assert.ok(Number.parseFloat(declarationValue(pegChoice, "min-height")) >= 44);
 });
