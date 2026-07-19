@@ -849,7 +849,7 @@ function getStandardDiskHeight(baseY, pegTopY, diskCount) {
 
 function getDiskColor(disk) {
   const diskCount = Math.max(1, gameState?.disk_count || MAX_DISKS);
-  const position = diskCount === 1 ? 0 : (diskCount - disk) / (diskCount - 1);
+  const position = diskCount === 1 ? 0 : (disk - 1) / (diskCount - 1);
   const scaled = position * (diskGradientStops.length - 1);
   const index = Math.min(diskGradientStops.length - 2, Math.max(0, Math.floor(scaled)));
   return mixHexColors(
