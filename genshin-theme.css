@@ -476,7 +476,7 @@
   }
 
   :root[data-theme="genshin"] body .modal {
-    padding: 28px 15px 20px;
+    padding: 18px 13px 14px;
   }
 
   :root[data-theme="genshin"] .modal-corner {
@@ -484,16 +484,30 @@
     height: 15px;
   }
 
+  :root[data-theme="genshin"] #configHint {
+    max-width: none;
+    margin-bottom: 0;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  :root[data-theme="genshin"] .field {
+    gap: 4px;
+    margin-top: 8px;
+  }
+
   :root[data-theme="genshin"] .field-control-row {
-    gap: 10px;
-    padding: 13px 15px;
+    gap: 8px;
+    min-height: 52px;
+    padding: 7px 12px;
   }
 
   :root[data-theme="genshin"] .disk-count-row {
-    grid-template-columns: minmax(0, 1fr) 50px;
+    grid-template-columns: minmax(0, 1fr) 46px;
     grid-template-areas:
       "label value"
       "slider slider";
+    row-gap: 5px;
   }
 
   :root[data-theme="genshin"] .disk-count-row .field-heading {
@@ -501,20 +515,51 @@
   }
 
   :root[data-theme="genshin"] .disk-count-row .field-heading > span { grid-area: label; }
-  :root[data-theme="genshin"] #modalDiskCountValue { grid-area: value; min-width: 50px; }
+  :root[data-theme="genshin"] #modalDiskCountValue {
+    grid-area: value;
+    min-width: 46px;
+    height: 36px;
+  }
   :root[data-theme="genshin"] .disk-count-control { grid-area: slider; }
 
+  :root[data-theme="genshin"] .field input[type="range"] {
+    margin: 6px 0 2px;
+  }
+
   :root[data-theme="genshin"] .position-control-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(86px, 0.75fr) minmax(144px, 1.25fr);
+    gap: 8px;
+    padding-block: 6px;
+  }
+
+  :root[data-theme="genshin"] .position-control-row > span {
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.2;
+    white-space: nowrap;
   }
 
   :root[data-theme="genshin"] .peg-button-group {
-    gap: 7px;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  :root[data-theme="genshin"] .peg-choice {
+    min-width: 0;
+    height: 44px;
+    min-height: 44px;
+    padding-inline: 4px;
+  }
+
+  :root[data-theme="genshin"] .form-error:empty {
+    min-height: 0;
+    margin-top: 0;
   }
 
   :root[data-theme="genshin"] .modal-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+    margin-top: 10px;
   }
 
   :root[data-theme="genshin"] .modal-actions button {
@@ -531,6 +576,14 @@
 }
 
 @media (max-width: 360px) {
+  :root[data-theme="genshin"] .position-control-row {
+    grid-template-columns: minmax(78px, 0.7fr) minmax(0, 1.3fr);
+  }
+
+  :root[data-theme="genshin"] .peg-button-group {
+    gap: 4px;
+  }
+
   :root[data-theme="genshin"] .modal-actions button {
     padding-inline: 32px;
     font-size: 12px;

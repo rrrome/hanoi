@@ -49,11 +49,20 @@ test("only the Genshin theme reveals the decorative action glyphs", () => {
   assert.equal(declarationValue(ruleBody(genshinCss, ':root[data-theme="genshin"] .action-glyph-start'), "color"), "var(--genshin-start)");
 });
 
-test("Genshin portrait modal stacks controls but keeps actions side by side", () => {
+test("Genshin portrait modal compacts controls while preserving touch targets", () => {
   const portrait = atRuleBody(genshinCss, "@media (orientation: portrait) and (max-width: 600px)");
+  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] body .modal'), "padding"), "18px 13px 14px");
+  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] #configHint'), "max-width"), "none");
+  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .field'), "margin-top"), "8px");
   assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .disk-count-row'), "grid-template-areas"), '"label value" "slider slider"');
-  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .position-control-row'), "grid-template-columns"), "1fr");
+  assert.equal(
+    declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .position-control-row'), "grid-template-columns"),
+    "minmax(86px, 0.75fr) minmax(144px, 1.25fr)",
+  );
+  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .form-error:empty'), "min-height"), "0");
+  assert.ok(Number.parseFloat(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .peg-choice'), "min-height")) >= 44);
   assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .modal-actions'), "grid-template-columns"), "repeat(2, minmax(0, 1fr))");
+  assert.ok(Number.parseFloat(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .modal-actions button'), "min-height")) >= 44);
 });
 
 test("Genshin action labels stay geometrically centered clear of compact glyphs", () => {
@@ -65,6 +74,11 @@ test("Genshin action labels stay geometrically centered clear of compact glyphs"
 
   const narrow = atRuleBody(genshinCss, "@media (max-width: 360px)");
   assert.equal(declarationValue(ruleBody(narrow, ':root[data-theme="genshin"] .modal-actions button'), "font-size"), "12px");
+  assert.equal(
+    declarationValue(ruleBody(narrow, ':root[data-theme="genshin"] .position-control-row'), "grid-template-columns"),
+    "minmax(78px, 0.7fr) minmax(0, 1.3fr)",
+  );
+  assert.equal(declarationValue(ruleBody(narrow, ':root[data-theme="genshin"] .peg-button-group'), "gap"), "4px");
   const glyph = ruleBody(narrow, ':root[data-theme="genshin"] .action-glyph');
   assert.equal(declarationValue(glyph, "width"), "24px");
   assert.equal(declarationValue(glyph, "height"), "24px");
