@@ -51,10 +51,13 @@ test("only the Genshin theme reveals the decorative action glyphs", () => {
 
 test("Genshin portrait modal compacts controls while preserving touch targets", () => {
   const portrait = atRuleBody(genshinCss, "@media (orientation: portrait) and (max-width: 600px)");
+  const diskCountRow = ruleBody(portrait, ':root[data-theme="genshin"] .disk-count-row');
   assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] body .modal'), "padding"), "18px 13px 14px");
   assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] #configHint'), "max-width"), "none");
   assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .field'), "margin-top"), "8px");
-  assert.equal(declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .disk-count-row'), "grid-template-areas"), '"label value" "slider slider"');
+  assert.equal(declarationValue(diskCountRow, "grid-template-areas"), '"label value" "slider slider"');
+  assert.equal(declarationValue(diskCountRow, "border-radius"), "clamp(18px, calc(17.5vw - 38px), 46px)");
+  assert.equal(declarationValue(diskCountRow, "transition"), "border-radius 120ms ease-out");
   assert.equal(
     declarationValue(ruleBody(portrait, ':root[data-theme="genshin"] .position-control-row'), "grid-template-columns"),
     "minmax(86px, 0.75fr) minmax(144px, 1.25fr)",
