@@ -41,6 +41,7 @@
   position: relative;
   isolation: isolate;
   background-color: #19242d;
+  font-family: "HYWenHei-65W", "Hanyi WenHei 65W", "汉仪文黑 65W", serif;
 }
 
 :root[data-theme="genshin"] body::before {
@@ -114,7 +115,7 @@
   transform: rotate(45deg) translateY(-1px);
 }
 
-:root[data-theme="genshin"] button:hover {
+:root[data-theme="genshin"] button:not(.peg-choice):hover {
   background: linear-gradient(
     180deg,
     rgba(113, 130, 158, var(--genshin-surface-opacity)) 0%,
@@ -152,7 +153,6 @@
 }
 
 :root[data-theme="genshin"] .secondary-button:hover,
-:root[data-theme="genshin"] .peg-choice:hover,
 :root[data-theme="genshin"] .theme-menu button:hover,
 :root[data-theme="genshin"] .theme-menu button[aria-checked="true"] {
   border-color: #d8bd76;
@@ -196,9 +196,34 @@
   background: rgba(246, 242, 229, var(--genshin-surface-opacity));
 }
 
+:root[data-theme="genshin"] .home-content {
+  display: grid;
+  justify-items: center;
+  width: min(840px, 100%);
+}
+
+:root[data-theme="genshin"] .home-intro {
+  max-width: 680px;
+  text-align: center;
+}
+
+:root[data-theme="genshin"] .home-eyebrow,
+:root[data-theme="genshin"] .home-description,
+:root[data-theme="genshin"] .home-privacy {
+  color: rgba(239, 242, 246, 0.9);
+  text-shadow: 0 2px 8px rgba(12, 28, 40, 0.78);
+}
+
+:root[data-theme="genshin"] .home-headline {
+  color: #f8f3e5;
+  font-family: "HYWenHei-65W", "Hanyi WenHei 65W", "汉仪文黑 65W", serif;
+  letter-spacing: 0.015em;
+  text-shadow: 0 3px 14px rgba(12, 28, 40, 0.82);
+}
+
 :root[data-theme="genshin"] .home-actions {
   position: relative;
-  width: min(360px, 100%);
+  width: min(760px, 100%);
   padding: 26px;
   border: 1px solid #c8ad72;
   border-radius: 4px;
@@ -372,4 +397,16 @@
 
 :root[data-theme="genshin"] .form-error {
   text-align: center;
+}
+
+@media (orientation: portrait) and (max-width: 600px) {
+  :root[data-theme="genshin"] .home-intro {
+    text-align: left;
+  }
+
+  :root[data-theme="genshin"] .home-actions {
+    grid-template-columns: 1fr;
+    width: 100%;
+    padding: 16px;
+  }
 }
